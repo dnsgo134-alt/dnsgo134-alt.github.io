@@ -515,19 +515,30 @@
       </div>
     </div>
 
-    <!-- 요청하신 데이터 백업 & 복원 버튼 영역 -->
-    <div class="action-group">
-      <button class="btn btn-backup" onclick="exportLedgerData()">
-        💾 데이터 백업 (다운로드)
-      </button>
-      <button class="btn btn-restore" onclick="document.getElementById('restoreFileInput').click()">
-        📂 데이터 복원 (불러오기)
-      </button>
-      <input type="file" id="restoreFileInput" accept=".json" style="display: none;" onchange="importLedgerData(event)" />
-      <button class="btn btn-outline" onclick="resetSampleData()">초기 샘플 복원</button>
-    </div>
-  </header>
+   <!-- 우측 상단 액션 버튼 영역 (백업 / 복원 / 샘플 복원 / 내역 추가) -->
+<div class="flex items-center gap-2">
+  <!-- 1. 데이터 백업 버튼 -->
+  <button onclick="exportLedgerData()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition">
+    💾 데이터 백업
+  </button>
 
+  <!-- 2. 데이터 복원 버튼 -->
+  <button onclick="document.getElementById('restoreFileInput').click()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 transition">
+    📂 데이터 복원
+  </button>
+  <input type="file" id="restoreFileInput" accept=".json" class="hidden" style="display:none;" onchange="importLedgerData(event)" />
+
+  <!-- 기존 샘플 복원 버튼 -->
+  <button onclick="resetToSample()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:bg-slate-100 transition">
+    ↻ 샘플 복원
+  </button>
+
+  <!-- 기존 + 내역 추가 버튼 -->
+  <button onclick="scrollToForm()" class="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition">
+    + 내역 추가
+  </button>
+  
+</div>
   <!-- 상단 요약 카드 4개 -->
   <section class="summary-grid">
     <div class="summary-card">
@@ -1034,6 +1045,70 @@
       </div>
     `).join('');
   }
+  // === 데이터 백업 (JSON 파일 다운로드) ===
+function exportLedgerData() {
+  // 현재 모아 가계부에서 사용 중인 데이터와 예산을 그대로 묶어서 저장
+  const backupPayload = {
+    transactions: typeof transactions !== 'undefined' ? transactions : [],
+    monthlyBudget: typeof monthlyBudget !== 'undefined' ? monthlyBudget : 2500000,
+    exportedAt: new Date().toISOString()
+  };
+
+  const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const today = new Date().toISOString().slice(0, 10);
+
+  a.href = url;
+  a.download = `모아가계부_백업_${today}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// === 데이터 복원 (JSON 파일 불러오기) ===
+function importLedgerData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const restoredTx = Array.isArray(parsed) ? parsed : parsed.transactions;
+
+      if (!Array.isArray(restoredTx)) {
+        alert('올바른 가계부 백업 파일(.json)이 아닙니다.');
+        return;
+      }
+
+      // 1. 메모리 변수 업데이트
+      if (typeof transactions !== 'undefined') transactions = restoredTx;
+      if (parsed.monthlyBudget && typeof monthlyBudget !== 'undefined') {
+        monthlyBudget = Number(parsed.monthlyBudget);
+      }
+
+      // 2. 로컬스토리지 모든 버전에 안전하게 동기화 저장
+      ['smart_ledger_transactions_v2', 'smart_ledger_v2_tx', 'SMART_LEDGER_PERSISTENT_STORAGE'].forEach(key => {
+        localStorage.setItem(key, JSON.stringify(restoredTx));
+      });
+      if (parsed.monthlyBudget) {
+        ['smart_ledger_budget_v2', 'smart_ledger_v2_budget'].forEach(key => {
+          localStorage.setItem(key, String(parsed.monthlyBudget));
+        });
+      }
+
+      // 3. 기존 저장 함수나 렌더링 함수가 있으면 호출 후 새로고침
+      if (typeof saveData === 'function') saveData();
+      alert(`총 ${restoredTx.length}건의 가계부 내역이 성공적으로 복원되었습니다!`);
+      location.reload();
+    } catch (err) {
+      alert('파일을 읽는 중 오류가 발생했습니다. 올바른 JSON 백업 파일인지 확인해주세요.');
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
 </script>
 
 </body>
