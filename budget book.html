@@ -101,17 +101,72 @@
                 </div>
             </div>
 
-            <!-- Month Navigator -->
-            <div class="flex items-center bg-toss-bg rounded-2xl p-1 border border-toss-border/60">
-                <button id="prevMonthBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition" title="이전 달">
-                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
-                </button>
-                <div class="px-4 py-1 text-sm font-bold text-toss-textMain min-w-[115px] text-center" id="currentMonthDisplay">
-                    2026년 10월
+            <!-- Enhanced Year & Month Navigator with Quick Picker Popover -->
+            <div class="relative flex items-center gap-1.5">
+                <div class="flex items-center bg-toss-bg rounded-2xl p-1 border border-toss-border/60">
+                    <button id="prevYearBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition hidden sm:flex items-center justify-center" title="이전 연도 (1년 전)">
+                        <i data-lucide="chevrons-left" class="w-4 h-4"></i>
+                    </button>
+                    <button id="prevMonthBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition flex items-center justify-center" title="이전 달">
+                        <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    </button>
+                    
+                    <!-- Clickable Year/Month Trigger -->
+                    <button id="ymPickerTriggerBtn" class="px-3 py-1 rounded-xl hover:bg-white transition flex items-center gap-1.5 text-sm font-bold text-toss-textMain min-w-[125px] justify-center group" title="클릭하여 연도/월 빠르게 선택">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-toss-blue group-hover:scale-110 transition"></i>
+                        <span id="currentMonthDisplay">2026년 10월</span>
+                        <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-toss-textSub group-hover:text-toss-textMain transition" id="ymChevronIcon"></i>
+                    </button>
+
+                    <button id="nextMonthBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition flex items-center justify-center" title="다음 달">
+                        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                    </button>
+                    <button id="nextYearBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition hidden sm:flex items-center justify-center" title="다음 연도 (1년 후)">
+                        <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+                    </button>
                 </div>
-                <button id="nextMonthBtn" class="p-1.5 rounded-xl hover:bg-white text-toss-textSub hover:text-toss-textMain transition" title="다음 달">
-                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+
+                <!-- Quick Jump to Today (2026-10) Button -->
+                <button id="jumpTodayBtn" class="px-2.5 py-2 rounded-2xl bg-toss-blueLight hover:bg-toss-blue hover:text-white text-toss-blue text-xs font-bold transition flex items-center gap-1 shrink-0" title="오늘 기준 월(2026년 10월)로 즉시 이동">
+                    <span>이번 달</span>
                 </button>
+
+                <!-- Year & Month Picker Popover -->
+                <div id="ymPickerPopover" class="hidden absolute top-full left-1/2 -translate-x-1/2 mt-2.5 w-80 sm:w-88 bg-white rounded-3xl shadow-modal border border-toss-border p-5 z-50 animate-fade-in">
+                    <!-- Picker Year Header -->
+                    <div class="flex items-center justify-between mb-3">
+                        <button type="button" id="pickerPrevYearBtn" class="p-2 rounded-xl bg-toss-bg hover:bg-toss-border/60 text-toss-textMain transition">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <span id="pickerYearTitle" class="text-base font-extrabold text-toss-textMain">2026년</span>
+                        </div>
+                        <button type="button" id="pickerNextYearBtn" class="p-2 rounded-xl bg-toss-bg hover:bg-toss-border/60 text-toss-textMain transition">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Quick Year Pills -->
+                    <div id="pickerYearPills" class="flex items-center justify-between gap-1 mb-4 bg-toss-bg p-1 rounded-xl">
+                        <!-- Dynamically rendered year pills (e.g., 2024, 2025, 2026, 2027) -->
+                    </div>
+
+                    <!-- 12-Month Grid -->
+                    <div id="pickerMonthGrid" class="grid grid-cols-3 gap-2 mb-4">
+                        <!-- Dynamically rendered 1월 ~ 12월 buttons with transaction count indicators -->
+                    </div>
+
+                    <!-- Direct Year/Month Jump & Today Footer -->
+                    <div class="pt-3 border-t border-toss-border flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-1.5">
+                            <input type="number" id="directYearInput" min="2000" max="2099" value="2026" class="w-20 px-2.5 py-1.5 text-xs font-bold bg-toss-bg rounded-xl outline-none focus:ring-2 focus:ring-toss-blue text-center" title="연도 직접 입력">
+                            <button type="button" id="directYearGoBtn" class="px-2.5 py-1.5 rounded-xl bg-toss-bg hover:bg-toss-border text-xs font-bold text-toss-textMain transition">연도 이동</button>
+                        </div>
+                        <button type="button" id="pickerTodayBtn" class="px-3 py-1.5 rounded-xl bg-toss-blueLight text-toss-blue hover:bg-toss-blue hover:text-white text-xs font-bold transition">
+                            이번 달(26.10)
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Action Buttons -->
@@ -202,6 +257,69 @@
                         <div id="budgetProgressBar" class="h-full bg-toss-blue rounded-full transition-all duration-500" style="width: 0%"></div>
                     </div>
                     <p class="text-xs text-toss-textSub mt-2 truncate" id="budgetRemainingText">남은 예산 계산 중...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Monthly Calendar Section -->
+        <section class="bg-white rounded-3xl p-6 shadow-toss">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-toss-blueLight text-toss-blue flex items-center justify-center shrink-0">
+                        <i data-lucide="calendar-days" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-toss-textMain" id="calendarSectionTitle">2026년 10월 소비 달력</h2>
+                            <span id="selectedDateFilterBadge" class="hidden text-[11px] font-bold bg-toss-blue text-white px-2.5 py-0.5 rounded-full items-center gap-1 cursor-pointer hover:bg-toss-blueDark transition" title="클릭하여 날짜 필터 해제">
+                                <span id="selectedDateFilterText">10월 14일 선택됨</span>
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </span>
+                        </div>
+                        <p class="text-xs text-toss-textSub mt-0.5">날짜를 클릭하면 해당 일자의 내역만 모아보고 바로 가계부를 작성할 수 있어요</p>
+                    </div>
+                </div>
+
+                <!-- Quick Month Bar & Calendar Fold Toggle -->
+                <div class="flex items-center gap-2 self-start sm:self-auto">
+                    <div class="hidden xl:flex items-center bg-toss-bg p-1 rounded-xl gap-0.5" id="quickMonthRibbon">
+                        <!-- Populated via JS: 1월~12월 mini bar -->
+                    </div>
+                    <button id="toggleCalendarBodyBtn" class="px-3 py-1.5 rounded-xl bg-toss-bg hover:bg-toss-border/70 text-xs font-bold text-toss-textMain flex items-center gap-1.5 transition">
+                        <span id="toggleCalendarBtnText">달력 접기</span>
+                        <i data-lucide="chevron-up" class="w-3.5 h-3.5" id="toggleCalendarBtnIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="calendarCollapsibleWrapper" class="space-y-3">
+                <!-- Day of week header -->
+                <div class="grid grid-cols-7 gap-1.5 text-center text-xs font-bold py-2 bg-toss-bg/70 rounded-2xl">
+                    <div class="text-toss-red">일</div>
+                    <div class="text-toss-textSub">월</div>
+                    <div class="text-toss-textSub">화</div>
+                    <div class="text-toss-textSub">수</div>
+                    <div class="text-toss-textSub">목</div>
+                    <div class="text-toss-textSub">금</div>
+                    <div class="text-toss-blue">토</div>
+                </div>
+
+                <!-- Calendar Days Grid -->
+                <div id="monthlyCalendarGrid" class="grid grid-cols-7 gap-1.5 sm:gap-2">
+                    <!-- Populated via JS -->
+                </div>
+
+                <!-- Calendar Bottom Legend & Quick Help -->
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 text-[11px] text-toss-textSub">
+                    <div class="flex items-center gap-4">
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-toss-green"></span>일별 수입 합계</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-toss-red"></span>일별 지출 합계</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-toss-blue"></span>오늘 / 선택된 날짜</span>
+                    </div>
+                    <button type="button" id="clearDateSelectionBtn" class="hidden text-xs font-bold text-toss-blue hover:underline items-center gap-1">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i>
+                        <span>선택 날짜 해제 (월 전체 보기)</span>
+                    </button>
                 </div>
             </div>
         </section>
@@ -371,11 +489,15 @@
                 <!-- Header & Filters -->
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-toss-border">
                     <div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <h2 class="text-base font-bold text-toss-textMain">상세 거래 내역</h2>
                             <span id="filteredCountBadge" class="text-xs font-bold bg-toss-bg text-toss-textSub px-2.5 py-0.5 rounded-full">0건</span>
+                            <button id="txListDateFilterResetChip" class="hidden text-xs font-bold bg-toss-blueLight text-toss-blue px-2.5 py-0.5 rounded-full items-center gap-1 hover:bg-toss-blue hover:text-white transition">
+                                <span id="txListDateFilterChipText">10월 14일만 보기 중</span>
+                                <i data-lucide="x" class="w-3 h-3"></i>
+                            </button>
                         </div>
-                        <p class="text-xs text-toss-textSub mt-0.5">카테고리나 검색어로 원하는 내역을 빠르게 찾아보세요</p>
+                        <p class="text-xs text-toss-textSub mt-0.5">카테고리, 검색어 또는 달력 날짜를 클릭해 원하는 내역을 빠르게 찾아보세요</p>
                     </div>
 
                     <!-- Type Filter Tabs -->
@@ -473,9 +595,14 @@
     </footer>
 
     <script>
-        // Storage Keys
-        const STORAGE_KEY_TX = 'moa_smart_ledger_transactions_v1';
-        const STORAGE_KEY_BUDGET = 'moa_smart_ledger_budget_v1';
+        // Storage Keys (Bumped version to load multi-year sample data smoothly)
+        const STORAGE_KEY_TX = 'moa_smart_ledger_transactions_v2';
+        const STORAGE_KEY_BUDGET = 'moa_smart_ledger_budget_v2';
+
+        // Default "Today" Reference (October 14, 2026)
+        const TODAY_YEAR = 2026;
+        const TODAY_MONTH = 10;
+        const TODAY_DATE_STR = '2026-10-14';
 
         // Category Metadata (Colors, Icons, Type)
         const CATEGORY_META = {
@@ -490,8 +617,12 @@
         };
 
         // Current State
-        let currentYear = 2026;
-        let currentMonth = 10; // 1-indexed (October)
+        let currentYear = TODAY_YEAR;
+        let currentMonth = TODAY_MONTH; // 1-indexed (October)
+        let pickerBrowseYear = TODAY_YEAR; // Year being browsed inside the popover
+        let selectedCalendarDate = null; // e.g., '2026-10-14' or null for full month
+        let isCalendarCollapsed = false;
+
         let transactions = [];
         let monthlyBudget = 2500000;
         let currentFilterType = 'all';
@@ -503,38 +634,60 @@
         let doughnutChartInstance = null;
         let trendChartInstance = null;
 
-        // Helper: Generate Realistic Sample Data for Current Month & Previous Month
-        function getInitialSampleTransactions(year, month) {
-            const pad = (n) => String(n).padStart(2, '0');
-            const ym = `${year}-${pad(month)}`;
-            const prevM = month === 1 ? 12 : month - 1;
-            const prevY = month === 1 ? year - 1 : year;
-            const prevYm = `${prevY}-${pad(prevM)}`;
-
+        // Helper: Generate Realistic Sample Data across Multiple Years & Months (2024, 2025, 2026, 2027)
+        function getInitialSampleTransactions() {
             return [
-                // Current Month Sample Data
-                { id: 'tx-101', date: `${ym}-01`, type: 'income', category: '급여', title: '10월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
-                { id: 'tx-102', date: `${ym}-02`, type: 'expense', category: '주거/통신', title: '오피스텔 관리비 및 도시가스', amount: 185000, method: '계좌이체' },
-                { id: 'tx-103', date: `${ym}-03`, type: 'expense', category: '식비', title: '이마트 트레이더스 주말 장보기', amount: 142000, method: '카드' },
-                { id: 'tx-104', date: `${ym}-05`, type: 'expense', category: '주거/통신', title: 'SKT 통신비 및 인터넷 결합', amount: 79000, method: '카드' },
-                { id: 'tx-105', date: `${ym}-06`, type: 'expense', category: '식비', title: '스타벅스 리저브 광화문점', amount: 13500, method: '카드' },
-                { id: 'tx-106', date: `${ym}-07`, type: 'expense', category: '교통', title: '알뜰교통 티머니 대중교통 충전', amount: 55000, method: '카드' },
-                { id: 'tx-107', date: `${ym}-08`, type: 'expense', category: '쇼핑', title: '무신사 가을 니트 & 자켓 구매', amount: 168000, method: '카드' },
-                { id: 'tx-108', date: `${ym}-09`, type: 'expense', category: '문화/여가', title: '리움미술관 기획 전시회 관람', amount: 36000, method: '카드' },
-                { id: 'tx-109', date: `${ym}-10`, type: 'income', category: '용돈/부수입', title: '당근마켓 전자기기 중고거래 판매', amount: 120000, method: '계좌이체' },
-                { id: 'tx-110', date: `${ym}-11`, type: 'expense', category: '식비', title: '성수동 파스타 & 와인 저녁 모임', amount: 88000, method: '카드' },
-                { id: 'tx-111', date: `${ym}-12`, type: 'expense', category: '저축/기타', title: '청년도약계좌 정기 적금 납입', amount: 500000, method: '계좌이체' },
-                { id: 'tx-112', date: `${ym}-13`, type: 'expense', category: '쇼핑', title: '쿠팡 로켓프레시 생필품 구매', amount: 46500, method: '카드' },
-                { id: 'tx-113', date: `${ym}-14`, type: 'expense', category: '식비', title: '블루보틀 여의도 카페 라떼', amount: 12800, method: '카드' },
-                { id: 'tx-114', date: `${ym}-14`, type: 'expense', category: '문화/여가', title: '넷플릭스 & 유튜브 프리미엄 구독', amount: 27900, method: '카드' },
-                { id: 'tx-115', date: `${ym}-14`, type: 'expense', category: '교통', title: '카카오T 야간 택시비', amount: 19400, method: '카드' },
+                // === 2026년 10월 (이번 달 - 가장 풍부한 샘플) ===
+                { id: 'tx-2610-01', date: '2026-10-01', type: 'income', category: '급여', title: '10월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
+                { id: 'tx-2610-02', date: '2026-10-02', type: 'expense', category: '주거/통신', title: '오피스텔 관리비 및 도시가스', amount: 185000, method: '계좌이체' },
+                { id: 'tx-2610-03', date: '2026-10-03', type: 'expense', category: '식비', title: '이마트 트레이더스 주말 장보기', amount: 142000, method: '카드' },
+                { id: 'tx-2610-04', date: '2026-10-05', type: 'expense', category: '주거/통신', title: 'SKT 통신비 및 인터넷 결합', amount: 79000, method: '카드' },
+                { id: 'tx-2610-05', date: '2026-10-06', type: 'expense', category: '식비', title: '스타벅스 리저브 광화문점', amount: 13500, method: '카드' },
+                { id: 'tx-2610-06', date: '2026-10-07', type: 'expense', category: '교통', title: 'K-패스 대중교통 정기 충전', amount: 55000, method: '카드' },
+                { id: 'tx-2610-07', date: '2026-10-08', type: 'expense', category: '쇼핑', title: '무신사 가을 니트 & 자켓 구매', amount: 168000, method: '카드' },
+                { id: 'tx-2610-08', date: '2026-10-09', type: 'expense', category: '문화/여가', title: '한글날 리움미술관 기획 전시 관람', amount: 36000, method: '카드' },
+                { id: 'tx-2610-09', date: '2026-10-10', type: 'income', category: '용돈/부수입', title: '당근마켓 전자기기 중고거래 판매', amount: 120000, method: '계좌이체' },
+                { id: 'tx-2610-10', date: '2026-10-11', type: 'expense', category: '식비', title: '성수동 파스타 & 와인 저녁 모임', amount: 88000, method: '카드' },
+                { id: 'tx-2610-11', date: '2026-10-12', type: 'expense', category: '저축/기타', title: '청년도약계좌 정기 적금 납입', amount: 500000, method: '계좌이체' },
+                { id: 'tx-2610-12', date: '2026-10-13', type: 'expense', category: '쇼핑', title: '쿠팡 로켓프레시 생필품 구매', amount: 46500, method: '카드' },
+                { id: 'tx-2610-13', date: '2026-10-14', type: 'expense', category: '식비', title: '블루보틀 여의도 카페 라떼', amount: 12800, method: '카드' },
+                { id: 'tx-2610-14', date: '2026-10-14', type: 'expense', category: '문화/여가', title: '넷플릭스 & 유튜브 프리미엄 구독', amount: 27900, method: '카드' },
+                { id: 'tx-2610-15', date: '2026-10-14', type: 'expense', category: '교통', title: '카카오T 야간 택시비', amount: 19400, method: '카드' },
 
-                // Previous Month Sample Data (for month switching experience)
-                { id: 'tx-001', date: `${prevYm}-01`, type: 'income', category: '급여', title: '9월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
-                { id: 'tx-002', date: `${prevYm}-05`, type: 'expense', category: '주거/통신', title: '월 관리비 및 통신비 납부', amount: 260000, method: '계좌이체' },
-                { id: 'tx-003', date: `${prevYm}-12`, type: 'expense', category: '식비', title: '한우 오마카세 가족 외식', amount: 240000, method: '카드' },
-                { id: 'tx-004', date: `${prevYm}-18`, type: 'expense', category: '쇼핑', title: '올리브영 세일 스킨케어 구매', amount: 84000, method: '카드' },
-                { id: 'tx-005', date: `${prevYm}-24`, type: 'expense', category: '저축/기타', title: '정기 적금 및 비상금 저축', amount: 500000, method: '계좌이체' }
+                // === 2026년 9월 ===
+                { id: 'tx-2609-01', date: '2026-09-01', type: 'income', category: '급여', title: '9월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
+                { id: 'tx-2609-02', date: '2026-09-04', type: 'expense', category: '주거/통신', title: '월 관리비 및 통신비 납부', amount: 264000, method: '계좌이체' },
+                { id: 'tx-2609-03', date: '2026-09-12', type: 'expense', category: '식비', title: '추석 맞이 가족 한우 외식', amount: 280000, method: '카드' },
+                { id: 'tx-2609-04', date: '2026-09-18', type: 'expense', category: '쇼핑', title: '올리브영 세일 스킨케어 구매', amount: 84000, method: '카드' },
+                { id: 'tx-2609-05', date: '2026-09-22', type: 'income', category: '용돈/부수입', title: '추석 명절 상여금', amount: 400000, method: '계좌이체' },
+                { id: 'tx-2609-06', date: '2026-09-25', type: 'expense', category: '저축/기타', title: '정기 적금 및 비상금 저축', amount: 500000, method: '계좌이체' },
+
+                // === 2026년 8월 ===
+                { id: 'tx-2608-01', date: '2026-08-01', type: 'income', category: '급여', title: '8월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
+                { id: 'tx-2608-02', date: '2026-08-08', type: 'expense', category: '문화/여가', title: '강릉 여름 휴가 숙소 및 KTX 예약', amount: 420000, method: '카드' },
+                { id: 'tx-2608-03', date: '2026-08-15', type: 'expense', category: '식비', title: '강릉 중앙시장 및 횟집 맛집 투어', amount: 165000, method: '카드' },
+                { id: 'tx-2608-04', date: '2026-08-24', type: 'expense', category: '주거/통신', title: '여름철 에어컨 전기세 및 관리비', amount: 235000, method: '계좌이체' },
+
+                // === 2026년 5월 ===
+                { id: 'tx-2605-01', date: '2026-05-01', type: 'income', category: '급여', title: '5월 정기 급여 입금', amount: 3850000, method: '계좌이체' },
+                { id: 'tx-2605-02', date: '2026-05-08', type: 'expense', category: '쇼핑', title: '어버이날 부모님 건강기능식품 선물', amount: 210000, method: '카드' },
+                { id: 'tx-2605-03', date: '2026-05-15', type: 'expense', category: '식비', title: '광교 호수공원 브런치 & 카페', amount: 64000, method: '카드' },
+                { id: 'tx-2605-04', date: '2026-05-25', type: 'income', category: '용돈/부수입', title: '5월 종합소득세 환급금', amount: 245000, method: '계좌이체' },
+
+                // === 2025년 12월 (작년 연말 데이터) ===
+                { id: 'tx-2512-01', date: '2025-12-01', type: 'income', category: '급여', title: '2025년 12월 급여 및 연말 성과급', amount: 4650000, method: '계좌이체' },
+                { id: 'tx-2512-02', date: '2025-12-12', type: 'expense', category: '쇼핑', title: '겨울 구스다운 패딩 구매', amount: 340000, method: '카드' },
+                { id: 'tx-2512-03', date: '2025-12-24', type: 'expense', category: '식비', title: '크리스마스 이브 스테이크 다이닝', amount: 195000, method: '카드' },
+                { id: 'tx-2512-04', date: '2025-12-28', type: 'expense', category: '저축/기타', title: '연말 세액공제용 연금저축펀드 추가납입', amount: 600000, method: '계좌이체' },
+
+                // === 2025년 10월 (작년 동월 비교용 데이터) ===
+                { id: 'tx-2510-01', date: '2025-10-01', type: 'income', category: '급여', title: '2025년 10월 정기 급여', amount: 3600000, method: '계좌이체' },
+                { id: 'tx-2510-02', date: '2025-10-09', type: 'expense', category: '문화/여가', title: '가을 단풍 캠핑장 예약 및 장비 대여', amount: 180000, method: '카드' },
+                { id: 'tx-2510-03', date: '2025-10-19', type: 'expense', category: '식비', title: '망원시장 장보기 및 칼국수', amount: 58000, method: '현금' },
+
+                // === 2024년 12월 (재작년 데이터) ===
+                { id: 'tx-2412-01', date: '2024-12-01', type: 'income', category: '급여', title: '2024년 12월 급여 입금', amount: 3450000, method: '계좌이체' },
+                { id: 'tx-2412-02', date: '2024-12-20', type: 'expense', category: '문화/여가', title: '연말 콘서트 티켓 예매', amount: 154000, method: '카드' }
             ];
         }
 
@@ -546,7 +699,7 @@
                 if (savedTx) {
                     transactions = JSON.parse(savedTx);
                 } else {
-                    transactions = getInitialSampleTransactions(currentYear, currentMonth);
+                    transactions = getInitialSampleTransactions();
                     saveToStorage();
                 }
 
@@ -555,7 +708,7 @@
                 }
             } catch (err) {
                 console.error('Failed to access localStorage:', err);
-                transactions = getInitialSampleTransactions(currentYear, currentMonth);
+                transactions = getInitialSampleTransactions();
             }
         }
 
@@ -581,6 +734,249 @@
             return transactions
                 .filter(tx => tx.date.startsWith(prefix))
                 .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+        }
+
+        // Navigate smoothly to any target Year and Month
+        function navigateToYearMonth(year, month, keepSelectedDate = false) {
+            currentYear = Number(year);
+            currentMonth = Number(month);
+            pickerBrowseYear = currentYear;
+            if (!keepSelectedDate) {
+                selectedCalendarDate = null;
+            }
+            setDefaultFormDate();
+            refreshAllViews();
+        }
+
+        // Render the Year & Month Quick Picker Popover Content
+        function renderYearMonthPicker() {
+            document.getElementById('pickerYearTitle').textContent = `${pickerBrowseYear}년`;
+            document.getElementById('directYearInput').value = pickerBrowseYear;
+
+            // Render quick year pills around pickerBrowseYear
+            const baseYears = [2024, 2025, 2026, 2027];
+            if (!baseYears.includes(pickerBrowseYear)) {
+                baseYears.splice(0, 1, pickerBrowseYear);
+                baseYears.sort((a, b) => a - b);
+            }
+            const yearPillsContainer = document.getElementById('pickerYearPills');
+            yearPillsContainer.innerHTML = baseYears.map(yr => {
+                const isActive = yr === pickerBrowseYear;
+                return `
+                    <button type="button" data-pick-year="${yr}" class="flex-1 py-1.5 rounded-lg text-xs font-bold transition ${
+                        isActive ? 'bg-white text-toss-blue shadow-xs' : 'text-toss-textSub hover:text-toss-textMain'
+                    }">
+                        ${yr}년
+                    </button>
+                `;
+            }).join('');
+
+            yearPillsContainer.querySelectorAll('[data-pick-year]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    pickerBrowseYear = Number(btn.dataset.pickYear);
+                    renderYearMonthPicker();
+                });
+            });
+
+            // Render 1~12 Month Grid with transaction count badge
+            const monthGrid = document.getElementById('pickerMonthGrid');
+            const monthsHtml = [];
+            for (let m = 1; m <= 12; m++) {
+                const prefix = getMonthPrefix(pickerBrowseYear, m);
+                const count = transactions.filter(t => t.date.startsWith(prefix)).length;
+                const isSelected = (pickerBrowseYear === currentYear && m === currentMonth);
+                const isTodayMonth = (pickerBrowseYear === TODAY_YEAR && m === TODAY_MONTH);
+
+                let btnStyle = 'bg-toss-bg/70 hover:bg-toss-blueLight/60 text-toss-textMain border-transparent';
+                if (isSelected) {
+                    btnStyle = 'bg-toss-blue text-white shadow-sm shadow-toss-blue/25 border-toss-blue';
+                } else if (isTodayMonth) {
+                    btnStyle = 'bg-toss-blueLight/50 text-toss-blue border-toss-blue/40';
+                }
+
+                monthsHtml.push(`
+                    <button type="button" data-pick-month="${m}" class="py-2.5 px-2 rounded-2xl border ${btnStyle} transition flex flex-col items-center justify-center relative">
+                        <span class="text-xs font-bold">${m}월</span>
+                        <span class="text-[10px] mt-0.5 ${isSelected ? 'text-white/90' : (count > 0 ? 'text-toss-blue font-semibold' : 'text-toss-textSub/60')}">
+                            ${count > 0 ? `${count}건` : '내역 없음'}
+                        </span>
+                    </button>
+                `);
+            }
+            monthGrid.innerHTML = monthsHtml.join('');
+
+            monthGrid.querySelectorAll('[data-pick-month]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const pickedMonth = Number(btn.dataset.pickMonth);
+                    navigateToYearMonth(pickerBrowseYear, pickedMonth);
+                    closeYearMonthPicker();
+                    showToast(`${currentYear}년 ${currentMonth}월 가계부로 이동했습니다.`);
+                });
+            });
+        }
+
+        function openYearMonthPicker() {
+            pickerBrowseYear = currentYear;
+            renderYearMonthPicker();
+            const popover = document.getElementById('ymPickerPopover');
+            popover.classList.remove('hidden');
+        }
+
+        function closeYearMonthPicker() {
+            const popover = document.getElementById('ymPickerPopover');
+            popover.classList.add('hidden');
+        }
+
+        // Render Quick 1~12 Month Ribbon Bar & Interactive Monthly Calendar Grid
+        function renderMonthlyCalendar() {
+            document.getElementById('calendarSectionTitle').textContent = `${currentYear}년 ${currentMonth}월 소비 달력`;
+
+            // 1. Render Quick Month Ribbon (for 1-click month switching inside currentYear)
+            const ribbon = document.getElementById('quickMonthRibbon');
+            if (ribbon) {
+                let ribbonHtml = '';
+                for (let m = 1; m <= 12; m++) {
+                    const prefix = getMonthPrefix(currentYear, m);
+                    const hasTx = transactions.some(t => t.date.startsWith(prefix));
+                    const isCurr = m === currentMonth;
+                    ribbonHtml += `
+                        <button type="button" data-ribbon-month="${m}" class="px-2.5 py-1 rounded-lg text-xs font-bold transition relative ${
+                            isCurr ? 'bg-white text-toss-blue shadow-xs' : 'text-toss-textSub hover:text-toss-textMain'
+                        }">
+                            ${m}월
+                            ${hasTx && !isCurr ? '<span class="w-1 h-1 rounded-full bg-toss-blue absolute top-1 right-1"></span>' : ''}
+                        </button>
+                    `;
+                }
+                ribbon.innerHTML = ribbonHtml;
+                ribbon.querySelectorAll('[data-ribbon-month]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        navigateToYearMonth(currentYear, Number(btn.dataset.ribbonMonth));
+                    });
+                });
+            }
+
+            // 2. Update Selected Date Filter Badges
+            const calBadge = document.getElementById('selectedDateFilterBadge');
+            const calBadgeText = document.getElementById('selectedDateFilterText');
+            const clearDateBtn = document.getElementById('clearDateSelectionBtn');
+            const txChip = document.getElementById('txListDateFilterResetChip');
+            const txChipText = document.getElementById('txListDateFilterChipText');
+
+            if (selectedCalendarDate) {
+                const [, m, d] = selectedCalendarDate.split('-').map(Number);
+                const label = `${m}월 ${d}일 선택됨`;
+                calBadgeText.textContent = label;
+                calBadge.classList.remove('hidden');
+                calBadge.classList.add('inline-flex');
+
+                clearDateBtn.classList.remove('hidden');
+                clearDateBtn.classList.add('inline-flex');
+
+                txChipText.textContent = `${m}월 ${d}일 내역만 보기`;
+                txChip.classList.remove('hidden');
+                txChip.classList.add('inline-flex');
+            } else {
+                calBadge.classList.add('hidden');
+                calBadge.classList.remove('inline-flex');
+                clearDateBtn.classList.add('hidden');
+                clearDateBtn.classList.remove('inline-flex');
+                txChip.classList.add('hidden');
+                txChip.classList.remove('inline-flex');
+            }
+
+            // 3. Build Monthly Calendar Cells
+            const firstDayOfWeek = new Date(currentYear, currentMonth - 1, 1).getDay(); // 0(Sun) ~ 6(Sat)
+            const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+            const monthTx = getCurrentMonthTransactions();
+
+            // Aggregate daily income & expense
+            const dailyMap = {};
+            for (let d = 1; d <= daysInMonth; d++) {
+                dailyMap[d] = { income: 0, expense: 0, count: 0 };
+            }
+            monthTx.forEach(tx => {
+                const dayNum = parseInt(tx.date.split('-')[2], 10);
+                if (dailyMap[dayNum]) {
+                    if (tx.type === 'income') dailyMap[dayNum].income += Number(tx.amount);
+                    else dailyMap[dayNum].expense += Number(tx.amount);
+                    dailyMap[dayNum].count += 1;
+                }
+            });
+
+            const gridEl = document.getElementById('monthlyCalendarGrid');
+            const cells = [];
+
+            // Leading blank cells from previous month
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                cells.push(`<div class="min-h-[68px] sm:min-h-[78px] rounded-2xl bg-toss-bg/30 border border-transparent"></div>`);
+            }
+
+            const pad = (n) => String(n).padStart(2, '0');
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${currentYear}-${pad(currentMonth)}-${pad(day)}`;
+                const dayOfWeek = (firstDayOfWeek + day - 1) % 7;
+                const info = dailyMap[day];
+                const isSelected = selectedCalendarDate === dateStr;
+                const isToday = dateStr === TODAY_DATE_STR;
+
+                let dayColor = 'text-toss-textMain';
+                if (dayOfWeek === 0) dayColor = 'text-toss-red';
+                else if (dayOfWeek === 6) dayColor = 'text-toss-blue';
+
+                let cellStyle = 'bg-toss-bg/40 hover:bg-toss-blueLight/40 border-transparent';
+                if (isSelected) {
+                    cellStyle = 'bg-toss-blueLight/80 border-toss-blue ring-2 ring-toss-blue/25';
+                } else if (isToday) {
+                    cellStyle = 'bg-white border-toss-blue/50 shadow-xs';
+                }
+
+                const incomeTag = info.income > 0
+                    ? `<div class="text-[10px] sm:text-[11px] font-bold text-toss-green truncate leading-tight">+${formatCompactKRW(info.income)}</div>`
+                    : '';
+                const expenseTag = info.expense > 0
+                    ? `<div class="text-[10px] sm:text-[11px] font-bold text-toss-red truncate leading-tight">-${formatCompactKRW(info.expense)}</div>`
+                    : '';
+
+                cells.push(`
+                    <button type="button" data-cal-date="${dateStr}" class="min-h-[68px] sm:min-h-[78px] p-1.5 sm:p-2 rounded-2xl border ${cellStyle} transition flex flex-col justify-between text-left group cursor-pointer">
+                        <div class="flex items-center justify-between w-full">
+                            <span class="text-xs font-bold ${dayColor} ${isSelected ? 'underline' : ''}">${day}</span>
+                            ${isToday ? '<span class="text-[9px] font-extrabold bg-toss-blue text-white px-1.5 py-0.2 rounded-full">오늘</span>' : ''}
+                        </div>
+                        <div class="w-full space-y-0.5 mt-1 text-right">
+                            ${incomeTag}
+                            ${expenseTag}
+                        </div>
+                    </button>
+                `);
+            }
+
+            gridEl.innerHTML = cells.join('');
+
+            // Attach click listener to each date cell
+            gridEl.querySelectorAll('[data-cal-date]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const clickedDate = btn.dataset.calDate;
+                    if (selectedCalendarDate === clickedDate) {
+                        // Toggle off if clicking already selected date
+                        selectedCalendarDate = null;
+                    } else {
+                        selectedCalendarDate = clickedDate;
+                        // Sync quick transaction form date to clicked calendar date
+                        document.getElementById('formDate').value = clickedDate;
+                    }
+                    renderMonthlyCalendar();
+                    renderTransactionList();
+                });
+            });
+        }
+
+        // Format compact number for calendar cell readability on mobile & desktop
+        function formatCompactKRW(amount) {
+            return new Intl.NumberFormat('ko-KR').format(Math.round(amount));
         }
 
         function showToast(message, type = 'success') {
@@ -921,6 +1317,7 @@
             const monthTx = getCurrentMonthTransactions();
 
             const filtered = monthTx.filter(tx => {
+                const matchDate = !selectedCalendarDate || tx.date === selectedCalendarDate;
                 const matchType = currentFilterType === 'all' || tx.type === currentFilterType;
                 const matchCategory = currentCategoryFilter === 'all' || tx.category === currentCategoryFilter;
                 const q = currentSearchQuery.trim().toLowerCase();
@@ -928,7 +1325,7 @@
                     tx.title.toLowerCase().includes(q) ||
                     tx.category.toLowerCase().includes(q) ||
                     tx.method.toLowerCase().includes(q);
-                return matchType && matchCategory && matchSearch;
+                return matchDate && matchType && matchCategory && matchSearch;
             });
 
             document.getElementById('filteredCountBadge').textContent = `${filtered.length}건`;
@@ -1026,8 +1423,11 @@
 
         function setDefaultFormDate() {
             const pad = (n) => String(n).padStart(2, '0');
-            const today = new Date();
-            const defaultDay = today.getMonth() + 1 === currentMonth ? pad(today.getDate()) : '14';
+            if (selectedCalendarDate && selectedCalendarDate.startsWith(getMonthPrefix(currentYear, currentMonth))) {
+                document.getElementById('formDate').value = selectedCalendarDate;
+                return;
+            }
+            const defaultDay = (currentYear === TODAY_YEAR && currentMonth === TODAY_MONTH) ? '14' : '01';
             document.getElementById('formDate').value = `${currentYear}-${pad(currentMonth)}-${defaultDay}`;
         }
 
@@ -1040,6 +1440,7 @@
 
         function refreshAllViews() {
             updateDashboardSummary();
+            renderMonthlyCalendar();
             renderCategoryChart();
             renderTrendChart();
             renderTransactionList();
@@ -1047,28 +1448,115 @@
         }
 
         function initEventListeners() {
-            // Month navigation
+            // Previous / Next Month buttons
             document.getElementById('prevMonthBtn').addEventListener('click', () => {
-                if (currentMonth === 1) {
-                    currentMonth = 12;
-                    currentYear--;
-                } else {
-                    currentMonth--;
-                }
-                setDefaultFormDate();
-                refreshAllViews();
+                const newMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+                const newYear = currentMonth === 1 ? currentYear - 1 : currentYear;
+                navigateToYearMonth(newYear, newMonth);
             });
 
             document.getElementById('nextMonthBtn').addEventListener('click', () => {
-                if (currentMonth === 12) {
-                    currentMonth = 1;
-                    currentYear++;
-                } else {
-                    currentMonth++;
-                }
-                setDefaultFormDate();
-                refreshAllViews();
+                const newMonth = currentMonth === 12 ? 1 : currentMonth + 1;
+                const newYear = currentMonth === 12 ? currentYear + 1 : currentYear;
+                navigateToYearMonth(newYear, newMonth);
             });
+
+            // Previous / Next Year buttons (<< and >>)
+            document.getElementById('prevYearBtn').addEventListener('click', () => {
+                navigateToYearMonth(currentYear - 1, currentMonth);
+                showToast(`${currentYear}년 ${currentMonth}월로 이동했습니다.`);
+            });
+
+            document.getElementById('nextYearBtn').addEventListener('click', () => {
+                navigateToYearMonth(currentYear + 1, currentMonth);
+                showToast(`${currentYear}년 ${currentMonth}월로 이동했습니다.`);
+            });
+
+            // Jump to Today (October 2026) button in header
+            document.getElementById('jumpTodayBtn').addEventListener('click', () => {
+                closeYearMonthPicker();
+                navigateToYearMonth(TODAY_YEAR, TODAY_MONTH);
+                showToast(`이번 달(${TODAY_YEAR}년 ${TODAY_MONTH}월)로 이동했습니다.`);
+            });
+
+            // Year & Month Quick Picker Popover Trigger & Controls
+            const ymTriggerBtn = document.getElementById('ymPickerTriggerBtn');
+            const ymPopover = document.getElementById('ymPickerPopover');
+
+            ymTriggerBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (ymPopover.classList.contains('hidden')) {
+                    openYearMonthPicker();
+                } else {
+                    closeYearMonthPicker();
+                }
+            });
+
+            document.getElementById('pickerPrevYearBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                pickerBrowseYear--;
+                renderYearMonthPicker();
+            });
+
+            document.getElementById('pickerNextYearBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                pickerBrowseYear++;
+                renderYearMonthPicker();
+            });
+
+            document.getElementById('directYearGoBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const val = Number(document.getElementById('directYearInput').value);
+                if (val >= 2000 && val <= 2099) {
+                    pickerBrowseYear = val;
+                    navigateToYearMonth(pickerBrowseYear, currentMonth);
+                    renderYearMonthPicker();
+                    showToast(`${currentYear}년 ${currentMonth}월로 이동했습니다.`);
+                }
+            });
+
+            document.getElementById('pickerTodayBtn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                navigateToYearMonth(TODAY_YEAR, TODAY_MONTH);
+                closeYearMonthPicker();
+                showToast(`이번 달(${TODAY_YEAR}년 ${TODAY_MONTH}월)로 이동했습니다.`);
+            });
+
+            // Close popover when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!ymPopover.classList.contains('hidden') && !ymPopover.contains(e.target) && !ymTriggerBtn.contains(e.target)) {
+                    closeYearMonthPicker();
+                }
+            });
+
+            // Calendar Collapse / Expand Toggle
+            document.getElementById('toggleCalendarBodyBtn').addEventListener('click', () => {
+                isCalendarCollapsed = !isCalendarCollapsed;
+                const wrapper = document.getElementById('calendarCollapsibleWrapper');
+                const btnText = document.getElementById('toggleCalendarBtnText');
+                const btnIcon = document.getElementById('toggleCalendarBtnIcon');
+
+                if (isCalendarCollapsed) {
+                    wrapper.classList.add('hidden');
+                    btnText.textContent = '달력 펼치기';
+                    btnIcon.setAttribute('data-lucide', 'chevron-down');
+                } else {
+                    wrapper.classList.remove('hidden');
+                    btnText.textContent = '달력 접기';
+                    btnIcon.setAttribute('data-lucide', 'chevron-up');
+                }
+                lucide.createIcons();
+            });
+
+            // Clear Selected Calendar Date Filter Buttons
+            const clearSelectedDateFilter = () => {
+                selectedCalendarDate = null;
+                renderMonthlyCalendar();
+                renderTransactionList();
+            };
+            document.getElementById('selectedDateFilterBadge').addEventListener('click', clearSelectedDateFilter);
+            document.getElementById('clearDateSelectionBtn').addEventListener('click', clearSelectedDateFilter);
+            document.getElementById('txListDateFilterResetChip').addEventListener('click', clearSelectedDateFilter);
 
             // Header "Add Transaction" button scrolls & focuses quick form
             document.getElementById('openAddModalBtn').addEventListener('click', () => {
@@ -1238,16 +1726,17 @@
             });
 
             document.getElementById('confirmResetBtn').addEventListener('click', () => {
-                currentYear = 2026;
-                currentMonth = 10;
+                currentYear = TODAY_YEAR;
+                currentMonth = TODAY_MONTH;
+                selectedCalendarDate = null;
                 monthlyBudget = 2500000;
-                transactions = getInitialSampleTransactions(currentYear, currentMonth);
+                transactions = getInitialSampleTransactions();
                 saveToStorage();
                 setDefaultFormDate();
                 refreshAllViews();
                 resetModal.classList.add('hidden');
                 resetModal.classList.remove('flex');
-                showToast('초기 샘플 데이터로 복원되었습니다.');
+                showToast('다년도 초기 샘플 데이터로 복원되었습니다.');
             });
         }
 
