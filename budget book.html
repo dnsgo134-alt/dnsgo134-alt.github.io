@@ -284,7 +284,7 @@
     }
     .btn-add-main:hover { background: #1b64da; }
 
-    /* 메인 컨테이너 (정중앙 정렬 보장) */
+    /* 메인 컨테이너 */
     .main-container {
       max-width: 1340px;
       margin: 24px auto 0;
@@ -302,7 +302,7 @@
       padding: 24px;
     }
 
-    /* 1. 상단 4개 요약 카드 그리드 (1줄에 4개 정확히 배치) */
+    /* 1. 상단 4개 요약 카드 그리드 */
     .summary-row {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -325,7 +325,38 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 142px;
+      min-height: 146px;
+      transition: all 0.18s ease;
+      position: relative;
+    }
+
+    /* 클릭 가능한 수입/지출 카드 인터랙션 */
+    .kpi-card.clickable {
+      cursor: pointer;
+    }
+
+    .kpi-card.clickable:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.07);
+    }
+
+    .kpi-card.clickable-inc:hover {
+      border-color: var(--green);
+    }
+
+    .kpi-card.clickable-exp:hover {
+      border-color: var(--red);
+    }
+
+    .click-hint-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 99px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: 0.15s;
     }
 
     .kpi-top {
@@ -367,6 +398,7 @@
       color: var(--text-sub);
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 6px;
       font-weight: 500;
     }
@@ -775,6 +807,109 @@
     .c-inc { color: var(--green); }
     .c-exp { color: var(--red); }
     .c-blue { color: var(--blue); }
+
+    /* ================= 수입/지출 상세 내역 전용 모달 팝업 ================= */
+    .detail-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .detail-modal-backdrop.open {
+      display: flex;
+    }
+
+    .detail-modal-box {
+      background: var(--white);
+      width: 100%;
+      max-width: 620px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+      animation: modalUp 0.2s ease-out;
+    }
+
+    @keyframes modalUp {
+      from { opacity: 0; transform: translateY(14px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .detail-modal-header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid #f1f3f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .detail-modal-summary {
+      padding: 18px 24px;
+      background: #f8fafc;
+      border-bottom: 1px solid #f1f3f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .detail-cat-chips {
+      padding: 12px 24px;
+      border-bottom: 1px solid #f1f3f5;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      background: #ffffff;
+    }
+
+    .cat-chip {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: #fafbfc;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .cat-chip.active {
+      background: var(--text-main);
+      color: #fff;
+      border-color: var(--text-main);
+    }
+
+    .detail-modal-list {
+      padding: 8px 24px 20px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .close-modal-btn {
+      border: none;
+      background: #f2f4f7;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    .close-modal-btn:hover {
+      background: #e5e8eb;
+      color: var(--text-main);
+    }
   </style>
 </head>
 <body>
@@ -834,31 +969,37 @@
   <!-- ================= 메인 대시보드 ================= -->
   <main class="main-container">
 
-    <!-- 1. 상단 4개 요약 카드 (한 줄에 4개 고정 배치) -->
+    <!-- 1. 상단 4개 요약 카드 (총 수입 / 총 지출 클릭 시 상세 내역 모달 오픈!) -->
     <section class="summary-row">
-      <!-- 총 수입 -->
-      <div class="kpi-card">
+      <!-- 총 수입 (클릭 가능) -->
+      <div class="kpi-card clickable clickable-inc" onclick="openDetailModal('income')" title="클릭하여 이번 달 수입 내역 전체 보기">
         <div class="kpi-top">
           <span class="kpi-label">이번 달 총 수입</span>
           <div class="kpi-circle" style="background:var(--green-soft); color:var(--green);">↗</div>
         </div>
         <div class="kpi-amount" id="cardIncome">0원</div>
         <div class="kpi-foot">
-          <span class="dot" style="background:var(--green);"></span>
-          <span id="cardIncomeCount">이번 달 수입 0건</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="dot" style="background:var(--green);"></span>
+            <span id="cardIncomeCount">이번 달 수입 0건</span>
+          </div>
+          <span class="click-hint-badge" style="background:var(--green-soft); color:var(--green);">내역 보기 ›</span>
         </div>
       </div>
 
-      <!-- 총 지출 -->
-      <div class="kpi-card">
+      <!-- 총 지출 (클릭 가능) -->
+      <div class="kpi-card clickable clickable-exp" onclick="openDetailModal('expense')" title="클릭하여 이번 달 지출 내역 전체 보기">
         <div class="kpi-top">
           <span class="kpi-label">이번 달 총 지출</span>
           <div class="kpi-circle" style="background:var(--red-soft); color:var(--red);">↘</div>
         </div>
         <div class="kpi-amount" id="cardExpense">0원</div>
         <div class="kpi-foot">
-          <span class="dot" style="background:var(--red);"></span>
-          <span id="cardExpenseCount">이번 달 지출 0건</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="dot" style="background:var(--red);"></span>
+            <span id="cardExpenseCount">이번 달 지출 0건</span>
+          </div>
+          <span class="click-hint-badge" style="background:var(--red-soft); color:var(--red);">내역 보기 ›</span>
         </div>
       </div>
 
@@ -1014,7 +1155,7 @@
       </div>
 
       <!-- 거래 내역 -->
-      <div class="sheet-card">
+      <div class="sheet-card" id="txListSection">
         <div class="sheet-title-bar">
           <div style="display:flex; align-items:center; gap:8px;">
             <span class="sheet-title">🧾 상세 거래 내역</span>
@@ -1035,11 +1176,47 @@
 
   </main>
 
+  <!-- ================= 총 수입 / 총 지출 클릭 시 열리는 상세 모달 팝업 ================= -->
+  <div class="detail-modal-backdrop" id="detailModalBackdrop" onclick="handleBackdropClick(event)">
+    <div class="detail-modal-box">
+      <div class="detail-modal-header">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="kpi-circle" id="modalIconBox" style="background:var(--green-soft); color:var(--green);">↗</div>
+          <div>
+            <div class="sheet-title" id="modalTitleText">2026년 10월 총 수입 내역</div>
+            <div class="brand-sub" id="modalSubText">카테고리별 필터링 및 정렬하여 확인할 수 있어요</div>
+          </div>
+        </div>
+        <button class="close-modal-btn" onclick="closeDetailModal()" title="닫기">✕</button>
+      </div>
+
+      <!-- 총액 & 정렬 옵션 바 -->
+      <div class="detail-modal-summary">
+        <div>
+          <div style="font-size:12px; color:var(--text-muted); font-weight:700;" id="modalTotalLabel">총 합계 금액</div>
+          <div style="font-size:24px; font-weight:800;" id="modalTotalAmount">0원</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <select id="modalSortSelect" class="input-box" style="width:auto; padding:6px 10px; font-size:12px; background:#fff;" onchange="renderDetailModalContent()">
+            <option value="date_desc">최신 날짜순</option>
+            <option value="amount_desc">금액 높은순</option>
+            <option value="amount_asc">금액 낮은순</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 카테고리 필터 칩 -->
+      <div class="detail-cat-chips" id="modalCategoryChips"></div>
+
+      <!-- 상세 내역 리스트 -->
+      <div class="detail-modal-list" id="modalTxList"></div>
+    </div>
+  </div>
+
   <script>
     const STORAGE_KEY_TX = 'smart_ledger_transactions_v2';
     const STORAGE_KEY_BUDGET = 'smart_ledger_budget_v2';
 
-    // 첫 번째 사진과 100% 동일한 샘플 데이터
     const SAMPLE_TRANSACTIONS = [
       { id: 101, date: '2026-10-01', type: 'income', category: '급여', method: '계좌이체', desc: '10월 정기 급여 입금', amount: 3850000 },
       { id: 102, date: '2026-10-02', type: 'expense', category: '주거/통신', method: '계좌이체', desc: '아파트 관리비 및 도시가스', amount: 185000 },
@@ -1071,6 +1248,10 @@
     let isCalendarCollapsed = false;
     let doughnutChart = null;
     let trendChart = null;
+
+    // 상세 모달 상태 변수
+    let modalCurrentType = 'expense'; // 'income' | 'expense'
+    let modalSelectedCategory = '전체';
 
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
@@ -1118,6 +1299,126 @@
         transactions: transactions,
         updatedAt: new Date().toISOString()
       }));
+    }
+
+    // ================= 총 수입 / 총 지출 클릭 시 열리는 상세 모달 함수 =================
+    function openDetailModal(type) {
+      modalCurrentType = type;
+      modalSelectedCategory = '전체';
+
+      // 하단 상세 거래 내역 셀렉트박스도 함께 연동 필터링
+      document.getElementById('filterType').value = type;
+      renderDashboard();
+
+      // 모달 표시 및 렌더링
+      document.getElementById('detailModalBackdrop').classList.add('open');
+      renderDetailModalContent();
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModalBackdrop').classList.remove('open');
+    }
+
+    function handleBackdropClick(e) {
+      if (e.target.id === 'detailModalBackdrop') {
+        closeDetailModal();
+      }
+    }
+
+    function selectModalCategory(cat) {
+      modalSelectedCategory = cat;
+      renderDetailModalContent();
+    }
+
+    function renderDetailModalContent() {
+      const prefix = getMonthPrefix();
+      const isInc = (modalCurrentType === 'income');
+      const typeLabel = isInc ? '수입' : '지출';
+
+      // 헤더 아이콘 및 타이틀 설정
+      const iconBox = document.getElementById('modalIconBox');
+      iconBox.style.background = isInc ? 'var(--green-soft)' : 'var(--red-soft)';
+      iconBox.style.color = isInc ? 'var(--green)' : 'var(--red)';
+      iconBox.textContent = isInc ? '↗' : '↘';
+
+      document.getElementById('modalTitleText').textContent = `${currentYear}년 ${currentMonth}월 총 ${typeLabel} 내역 기록`;
+
+      // 해당 월 + 해당 타입(수입/지출) 전체 데이터
+      const baseList = transactions.filter(t => t.date.startsWith(prefix) && t.type === modalCurrentType);
+      const totalSum = baseList.reduce((s, t) => s + Number(t.amount), 0);
+
+      // 카테고리 칩 생성
+      const catMap = {};
+      baseList.forEach(t => {
+        catMap[t.category] = (catMap[t.category] || 0) + 1;
+      });
+      const categories = ['전체', ...Object.keys(catMap)];
+      const chipsWrap = document.getElementById('modalCategoryChips');
+      chipsWrap.innerHTML = categories.map(cat => {
+        const count = cat === '전체' ? baseList.length : catMap[cat];
+        const activeClass = (modalSelectedCategory === cat) ? 'active' : '';
+        return `<button class="cat-chip ${activeClass}" onclick="selectModalCategory('${cat}')">${cat} (${count})</button>`;
+      }).join('');
+
+      // 선택된 카테고리 필터 적용
+      let filtered = modalSelectedCategory === '전체'
+        ? [...baseList]
+        : baseList.filter(t => t.category === modalSelectedCategory);
+
+      // 정렬 적용
+      const sortMode = document.getElementById('modalSortSelect').value;
+      if (sortMode === 'date_desc') {
+        filtered.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
+      } else if (sortMode === 'amount_desc') {
+        filtered.sort((a, b) => Number(b.amount) - Number(a.amount));
+      } else if (sortMode === 'amount_asc') {
+        filtered.sort((a, b) => Number(a.amount) - Number(b.amount));
+      }
+
+      const filteredSum = filtered.reduce((s, t) => s + Number(t.amount), 0);
+      document.getElementById('modalTotalLabel').textContent =
+        `${modalSelectedCategory} ${typeLabel} 합계 (총 ${filtered.length}건)`;
+
+      const amtEl = document.getElementById('modalTotalAmount');
+      amtEl.className = isInc ? 'c-inc' : 'c-exp';
+      amtEl.textContent = `${isInc ? '+' : '-'}${filteredSum.toLocaleString()}원`;
+
+      // 리스트 렌더링
+      const listEl = document.getElementById('modalTxList');
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div style="padding:48px 0; text-align:center; color:var(--text-sub); font-size:14px;">기록된 ${typeLabel} 내역이 없습니다.</div>`;
+        return;
+      }
+
+      listEl.innerHTML = filtered.map(t => {
+        const pct = totalSum > 0 ? Math.round((Number(t.amount) / totalSum) * 100) : 0;
+        return `
+          <div class="tx-row">
+            <div class="tx-info">
+              <div class="tx-badge" style="background:${isInc ? 'var(--green-soft)' : 'var(--red-soft)'}; color:${isInc ? 'var(--green)' : 'var(--red)'};">
+                ${pct}%
+              </div>
+              <div>
+                <div class="tx-name">${t.desc}</div>
+                <div class="tx-sub">${t.date} · ${t.category} · ${t.method || '카드'}</div>
+              </div>
+            </div>
+            <div class="tx-right-box">
+              <span class="tx-val ${isInc ? 'c-inc' : 'c-exp'}">
+                ${isInc ? '+' : '-'}${Number(t.amount).toLocaleString()}원
+              </span>
+              <button class="del-x" onclick="deleteTransactionFromModal(${t.id})" title="삭제">✕</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteTransactionFromModal(id) {
+      transactions = transactions.filter(t => t.id !== id);
+      saveData();
+      renderDashboard();
+      renderDetailModalContent();
     }
 
     // 백업 다운로드
