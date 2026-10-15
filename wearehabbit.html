@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>자동 주간 초기화 습관 대시보드</title>
+  <title>인원별 일일 습관 & 주간 연속 달성 대시보드</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -22,11 +22,11 @@
 <body class="text-slate-800 antialiased p-4 md:p-8">
 
   <div class="max-w-5xl mx-auto space-y-6">
-    <!-- 자동 초기화 알림 배너 (새 주차 감지 시 표시) -->
+    <!-- 자동 초기화 알림 배너 -->
     <div id="auto-reset-banner" class="hidden bg-indigo-600 text-white px-5 py-3.5 rounded-2xl shadow-sm flex items-center justify-between">
       <div class="flex items-center gap-2.5 text-sm font-medium">
         <span>✨</span>
-        <span id="auto-reset-message">새로운 주가 시작되어 주간 체크 기록이 자동으로 초기화되었습니다!</span>
+        <span id="auto-reset-message">새로운 주가 시작되어 모든 인원의 주간 체크 기록이 자동으로 초기화되었습니다!</span>
       </div>
       <button onclick="closeBanner()" class="text-indigo-200 hover:text-white text-xs font-semibold px-2 py-1">닫기 ✕</button>
     </div>
@@ -35,19 +35,22 @@
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
       <div>
         <div class="flex flex-wrap items-center gap-2">
-          <span class="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-600 rounded-full">Auto-Reset Routine</span>
+          <span class="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-600 rounded-full">Multi-User Routine</span>
           <span id="current-date-badge" class="text-xs text-slate-500 font-medium"></span>
           <span id="week-range-badge" class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-medium"></span>
         </div>
         <h1 class="text-2xl font-bold text-slate-900 mt-1.5">습관 달성 & 스트릭 대시보드</h1>
-        <p class="text-sm text-slate-500 mt-0.5">매주 월요일 00:00 기준, 현재 날짜를 감지해 주간 기록이 자동 초기화됩니다.</p>
+        <p class="text-sm text-slate-500 mt-0.5">인원별로 일일 목표를 관리하고 주간 연속 달성 기록을 확인하세요.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        <button onclick="simulateNextWeek()" class="px-3.5 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition" title="지난주 월요일로 저장값을 변경해 자동 초기화를 즉시 테스트합니다">
+        <button onclick="downloadSelfHTML()" class="px-3.5 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm transition">
+          💾 HTML 다운로드
+        </button>
+        <button onclick="simulateNextWeek()" class="px-3.5 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition">
           ⚡ 자동 초기화 테스트
         </button>
         <button onclick="manualResetWeek()" class="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
-          수동 초기화
+          현재 인원 초기화
         </button>
         <button onclick="restoreDefaults()" class="px-3.5 py-2 text-xs font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition">
           샘플 복원
@@ -55,12 +58,11 @@
       </div>
     </header>
 
-    <!-- 상단 KPI 요약 카드 -->
+    <!-- 상단 KPI 요약 카드 (선택된 인원 기준) -->
     <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <!-- 오늘의 달성률 -->
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
         <div class="flex items-center justify-between">
-          <span class="text-sm font-medium text-slate-500">오늘의 목표 달성률</span>
+          <span class="text-sm font-medium text-slate-500"><strong id="kpi-user-name-1" class="text-indigo-600"></strong> 오늘 달성률</span>
           <span id="today-label" class="text-xs font-semibold px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-md">오늘</span>
         </div>
         <div class="mt-3 flex items-baseline gap-2">
@@ -72,7 +74,6 @@
         </div>
       </div>
 
-      <!-- 주간 전체 진행률 -->
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <span class="text-sm font-medium text-slate-500">이번 주 누적 달성률</span>
@@ -87,7 +88,6 @@
         </div>
       </div>
 
-      <!-- 최고 연속 스트릭 -->
       <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
         <div class="flex items-center justify-between">
           <span class="text-sm font-medium text-slate-500">이번 주 최고 스트릭</span>
@@ -101,13 +101,51 @@
       </div>
     </section>
 
-    <!-- 새 습관 추가 폼 -->
+    <!-- [신규 추가] 인원(사용자) 추가 및 선택 탭 영역 (목표 추가 폼 상단) -->
+    <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            👥 인원 선택 및 추가
+          </h2>
+          <p class="text-xs text-slate-400 mt-0.5">인원을 클릭하면 해당 인원의 주간 목표 체크리스트로 전환됩니다.</p>
+        </div>
+        <!-- 인원 추가 폼 -->
+        <form id="add-user-form" class="flex items-center gap-2">
+          <input
+            type="text"
+            id="user-input"
+            placeholder="추가할 이름 입력 (예: 홍길동)"
+            required
+            maxlength="12"
+            class="px-3.5 py-2 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition w-44 sm:w-52"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-xl transition whitespace-nowrap"
+          >
+            + 인원 추가
+          </button>
+        </form>
+      </div>
+
+      <!-- 인원 탭 리스트 -->
+      <div id="user-tabs" class="flex flex-wrap items-center gap-2">
+        <!-- JS로 렌더링 -->
+      </div>
+    </section>
+
+    <!-- 새 습관(목표) 추가 폼 -->
     <section class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-      <form id="add-habit-form" class="flex flex-col sm:flex-row gap-3">
+      <form id="add-habit-form" class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <div class="flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold whitespace-nowrap">
+          <span>🎯 대상:</span>
+          <span id="target-user-badge">-</span>
+        </div>
         <input
           type="text"
           id="habit-input"
-          placeholder="새로운 일일 목표를 입력하세요 (예: 물 2L 마시기, 기술 문서 30분 읽기)"
+          placeholder="선택된 인원의 새로운 일일 목표를 입력하세요 (예: 물 2L 마시기, 기술 문서 30분 읽기)"
           required
           class="flex-1 px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
         />
@@ -122,7 +160,7 @@
         </select>
         <button
           type="submit"
-          class="px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition"
+          class="px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition whitespace-nowrap"
         >
           + 목표 추가
         </button>
@@ -133,7 +171,9 @@
     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h2 class="text-base font-bold text-slate-900">주간 목표 체크리스트</h2>
+          <h2 class="text-base font-bold text-slate-900">
+            <span id="table-user-title" class="text-indigo-600"></span>님의 주간 목표 체크리스트
+          </h2>
           <p class="text-xs text-slate-400">각 요일 셀에 실제 날짜가 표시되며, 주가 바뀌면 체크 상태만 자동으로 비워집니다.</p>
         </div>
         <div class="flex items-center gap-2 text-xs text-slate-500">
@@ -145,46 +185,38 @@
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
-            <tr id="table-header" class="border-b border-slate-100 text-xs font-semibold text-slate-500 bg-slate-50/60">
-              <!-- JS로 렌더링 -->
-            </tr>
+            <tr id="table-header" class="border-b border-slate-100 text-xs font-semibold text-slate-500 bg-slate-50/60"></tr>
           </thead>
-          <tbody id="habit-tbody" class="divide-y divide-slate-100 text-sm">
-            <!-- JS로 렌더링 -->
-          </tbody>
+          <tbody id="habit-tbody" class="divide-y divide-slate-100 text-sm"></tbody>
         </table>
       </div>
     </section>
 
     <!-- 하단: 요일별 달성 추이 & 지난주 아카이브 기록 -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- 요일별 달성 추이 바 차트 -->
       <section class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex items-center justify-between mb-4">
           <div>
-            <h2 class="text-base font-bold text-slate-900">요일별 달성 추이</h2>
+            <h2 class="text-base font-bold text-slate-900">
+              <span id="chart-user-title" class="text-indigo-600"></span>님의 요일별 달성 추이
+            </h2>
             <p class="text-xs text-slate-400">이번 주 요일별 완료 비율을 실시간으로 비교합니다.</p>
           </div>
         </div>
-        <div id="daily-chart" class="grid grid-cols-7 gap-3 items-end h-36 pt-6 px-2">
-          <!-- JS로 렌더링 -->
-        </div>
+        <div id="daily-chart" class="grid grid-cols-7 gap-3 items-end h-36 pt-6 px-2"></div>
       </section>
 
-      <!-- 자동 백업된 지난 주간 기록 아카이브 -->
       <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
         <div>
           <div class="flex items-center justify-between mb-3">
             <h2 class="text-base font-bold text-slate-900">주간 자동 백업 기록</h2>
             <span class="text-[11px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded">최근 5주</span>
           </div>
-          <p class="text-xs text-slate-400 mb-4">자동 초기화가 실행될 때 이전 주의 최종 달성률이 이곳에 보관됩니다.</p>
-          <ul id="history-list" class="space-y-2.5 text-xs">
-            <!-- JS로 렌더링 -->
-          </ul>
+          <p class="text-xs text-slate-400 mb-4">선택된 인원의 이전 주 최종 달성률이 이곳에 보관됩니다.</p>
+          <ul id="history-list" class="space-y-2.5 text-xs"></ul>
         </div>
         <button onclick="clearHistory()" class="mt-4 text-xs text-slate-400 hover:text-slate-600 self-end underline">
-          백업 기록 지우기
+          현재 인원 백업 지우기
         </button>
       </section>
     </div>
@@ -192,29 +224,44 @@
 
   <script>
     const DAYS = ['월', '화', '수', '목', '금', '토', '일'];
-    const STORAGE_KEY = 'habit_dashboard_data_v2';
-    const WEEK_KEY = 'habit_dashboard_week_monday_v2';
-    const HISTORY_KEY = 'habit_dashboard_history_v2';
+    const STORAGE_KEY = 'habit_dashboard_multi_users_v3';
+    const ACTIVE_USER_KEY = 'habit_dashboard_active_user_v3';
+    const WEEK_KEY = 'habit_dashboard_week_monday_v3';
 
-    const DEFAULT_HABITS = [
-      { id: 1, title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, true, false, false, false, false] },
-      { id: 2, title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, false, false, false, false] },
-      { id: 3, title: '물 2L 이상 마시기', category: '건강', checks: [true, false, true, false, false, false, false] },
-      { id: 4, title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, false, false, false, false, false] },
-      { id: 5, title: '취침 전 스마트폰 멀리하기', category: '생활', checks: [false, true, true, false, false, false, false] }
+    // 초기 샘플 데이터 (2명의 샘플 인원 구성)
+    const DEFAULT_USERS = [
+      {
+        id: 'user_1',
+        name: '기본 사용자',
+        habits: [
+          { id: 101, title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, true, false, false, false, false] },
+          { id: 102, title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, false, false, false, false] },
+          { id: 103, title: '물 2L 이상 마시기', category: '건강', checks: [true, false, true, false, false, false, false] },
+          { id: 104, title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, false, false, false, false, false] }
+        ],
+        history: []
+      },
+      {
+        id: 'user_2',
+        name: '팀원 A',
+        habits: [
+          { id: 201, title: '출근 후 데일리 스크럼 정리', category: '업무', checks: [true, true, true, true, false, false, false] },
+          { id: 202, title: '저녁 독서 30분', category: '자기계발', checks: [false, true, true, false, false, false, false] },
+          { id: 203, title: '비타민 챙겨 먹기', category: '건강', checks: [true, true, false, true, false, false, false] }
+        ],
+        history: []
+      }
     ];
 
-    // 1. 특정 날짜 기준 '해당 주의 월요일' Date 객체 반환
     function getMondayDate(baseDate = new Date()) {
       const d = new Date(baseDate);
       d.setHours(0, 0, 0, 0);
-      const day = d.getDay(); // 0(일) ~ 6(토)
-      const diff = day === 0 ? -6 : 1 - day; // 일요일이면 -6일, 그 외엔 월요일(1)과의 차이
+      const day = d.getDay();
+      const diff = day === 0 ? -6 : 1 - day;
       d.setDate(d.getDate() + diff);
       return d;
     }
 
-    // 2. 로컬 타임존 기준 YYYY-MM-DD 포맷 문자열 반환
     function formatDateYMD(dateObj) {
       const y = dateObj.getFullYear();
       const m = String(dateObj.getMonth() + 1).padStart(2, '0');
@@ -222,7 +269,6 @@
       return `${y}-${m}-${d}`;
     }
 
-    // 3. 이번 주 월~일 날짜 배열 생성 (테이블 헤더 표시용)
     function getWeekDates(baseDate = new Date()) {
       const monday = getMondayDate(baseDate);
       return Array.from({ length: 7 }, (_, idx) => {
@@ -232,85 +278,206 @@
       });
     }
 
-    // 4. 현재 요일 인덱스 반환 (월=0 ~ 일=6)
     function getTodayIndex() {
       const jsDay = new Date().getDay();
       return jsDay === 0 ? 6 : jsDay - 1;
     }
 
-    let habits = loadHabits();
-    let historyLogs = loadHistory();
+    let users = loadUsers();
+    let activeUserId = loadActiveUserId();
 
-    function loadHabits() {
+    function loadUsers() {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch (e) {}
       }
-      return JSON.parse(JSON.stringify(DEFAULT_HABITS));
+      return JSON.parse(JSON.stringify(DEFAULT_USERS));
     }
 
-    function saveHabits() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(habits));
+    function saveUsers() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
     }
 
-    function loadHistory() {
-      const saved = localStorage.getItem(HISTORY_KEY);
-      if (saved) {
-        try { return JSON.parse(saved); } catch (e) {}
+    function loadActiveUserId() {
+      const savedId = localStorage.getItem(ACTIVE_USER_KEY);
+      if (savedId && users.some(u => u.id === savedId)) {
+        return savedId;
       }
-      return [];
+      return users[0].id;
     }
 
-    function saveHistory() {
-      localStorage.setItem(HISTORY_KEY, JSON.stringify(historyLogs));
+    function saveActiveUserId() {
+      localStorage.setItem(ACTIVE_USER_KEY, activeUserId);
     }
 
-    // 5. 핵심: 현재 날짜 기준 주간 자동 초기화 체크 함수
+    function getActiveUser() {
+      return users.find(u => u.id === activeUserId) || users[0];
+    }
+
+    // 현재 날짜 기준 모든 인원의 주간 기록 자동 초기화
     function checkAndAutoResetWeek() {
       const currentMondayStr = formatDateYMD(getMondayDate(new Date()));
       const savedMondayStr = localStorage.getItem(WEEK_KEY);
 
-      // 최초 실행 시 현재 주간 기준일만 기록
       if (!savedMondayStr) {
         localStorage.setItem(WEEK_KEY, currentMondayStr);
         return;
       }
 
-      // 저장된 월요일 날짜와 오늘 기준 월요일 날짜가 다르면 -> 새로운 주 진입!
       if (savedMondayStr !== currentMondayStr) {
-        // 지난주 달성 통계 백업
-        const totalPossible = habits.length * 7;
-        const totalDone = habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
-        const weeklyPct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+        users.forEach(user => {
+          const totalPossible = user.habits.length * 7;
+          const totalDone = user.habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
+          const weeklyPct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
 
-        historyLogs.unshift({
-          weekMonday: savedMondayStr,
-          rate: weeklyPct,
-          done: totalDone,
-          total: totalPossible,
-          resetAt: formatDateYMD(new Date())
+          if (!user.history) user.history = [];
+          user.history.unshift({
+            weekMonday: savedMondayStr,
+            rate: weeklyPct,
+            done: totalDone,
+            total: totalPossible,
+            resetAt: formatDateYMD(new Date())
+          });
+          user.history = user.history.slice(0, 5);
+
+          user.habits.forEach(h => {
+            h.checks = [false, false, false, false, false, false, false];
+          });
         });
-        historyLogs = historyLogs.slice(0, 5); // 최근 5주 기록만 유지
-        saveHistory();
 
-        // 모든 습관의 체크 배열을 자동으로 초기화
-        habits.forEach(h => {
-          h.checks = [false, false, false, false, false, false, false];
-        });
-        saveHabits();
-
-        // 새 주간 월요일 날짜로 갱신
+        saveUsers();
         localStorage.setItem(WEEK_KEY, currentMondayStr);
 
-        // 상단 알림 배너 표시
         const banner = document.getElementById('auto-reset-banner');
         const msg = document.getElementById('auto-reset-message');
-        msg.textContent = `새로운 주(${currentMondayStr} 주간)가 시작되어 지난주 기록(${weeklyPct}%)을 백업하고 체크리스트를 자동 초기화했습니다.`;
+        msg.textContent = `새로운 주(${currentMondayStr} 주간)가 시작되어 모든 인원의 지난주 기록을 백업하고 체크리스트를 자동 초기화했습니다.`;
         banner.classList.remove('hidden');
       }
     }
 
-    // 테스트용: 강제로 저장된 주간 날짜를 7일 전 월요일로 되돌린 후 자동 초기화 트리거
+    // 인원 선택 전환
+    function selectUser(userId) {
+      activeUserId = userId;
+      saveActiveUserId();
+      renderAll();
+    }
+
+    // 인원 추가 이벤트
+    document.getElementById('add-user-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('user-input');
+      const name = input.value.trim();
+      if (!name) return;
+
+      if (users.some(u => u.name === name)) {
+        alert('이미 동일한 이름의 인원이 등록되어 있습니다.');
+        return;
+      }
+
+      const newUser = {
+        id: 'user_' + Date.now(),
+        name: name,
+        habits: [
+          { id: Date.now() + 1, title: '일일 핵심 목표 1가지 달성하기', category: '자기계발', checks: [false, false, false, false, false, false, false] }
+        ],
+        history: []
+      };
+
+      users.push(newUser);
+      activeUserId = newUser.id;
+      input.value = '';
+      saveUsers();
+      saveActiveUserId();
+      renderAll();
+    });
+
+    // 인원 삭제
+    function deleteUser(userId, event) {
+      event.stopPropagation();
+      if (users.length <= 1) {
+        alert('최소 1명의 인원은 유지되어야 합니다.');
+        return;
+      }
+      const target = users.find(u => u.id === userId);
+      if (!confirm(`'${target.name}' 인원과 해당 체크리스트를 삭제하시겠습니까?`)) return;
+
+      users = users.filter(u => u.id !== userId);
+      if (activeUserId === userId) {
+        activeUserId = users[0].id;
+        saveActiveUserId();
+      }
+      saveUsers();
+      renderAll();
+    }
+
+    // 현재 선택된 인원에 새 습관 추가
+    document.getElementById('add-habit-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const input = document.getElementById('habit-input');
+      const category = document.getElementById('category-input').value;
+      const title = input.value.trim();
+      if (!title) return;
+
+      const user = getActiveUser();
+      user.habits.push({
+        id: Date.now(),
+        title,
+        category,
+        checks: [false, false, false, false, false, false, false]
+      });
+
+      input.value = '';
+      saveUsers();
+      renderAll();
+    });
+
+    function toggleCheck(habitId, dayIdx) {
+      const user = getActiveUser();
+      const habit = user.habits.find(h => h.id === habitId);
+      if (habit) {
+        habit.checks[dayIdx] = !habit.checks[dayIdx];
+        saveUsers();
+        renderAll();
+      }
+    }
+
+    function deleteHabit(habitId) {
+      const user = getActiveUser();
+      user.habits = user.habits.filter(h => h.id !== habitId);
+      saveUsers();
+      renderAll();
+    }
+
+    function manualResetWeek() {
+      const user = getActiveUser();
+      user.habits.forEach(h => {
+        h.checks = [false, false, false, false, false, false, false];
+      });
+      localStorage.setItem(WEEK_KEY, formatDateYMD(getMondayDate(new Date())));
+      saveUsers();
+      renderAll();
+    }
+
+    function restoreDefaults() {
+      if (!confirm('샘플 초기 데이터로 복원하시겠습니까?')) return;
+      users = JSON.parse(JSON.stringify(DEFAULT_USERS));
+      activeUserId = users[0].id;
+      localStorage.setItem(WEEK_KEY, formatDateYMD(getMondayDate(new Date())));
+      saveUsers();
+      saveActiveUserId();
+      renderAll();
+    }
+
+    function clearHistory() {
+      const user = getActiveUser();
+      user.history = [];
+      saveUsers();
+      renderAll();
+    }
+
     function simulateNextWeek() {
       const lastWeekMonday = getMondayDate(new Date());
       lastWeekMonday.setDate(lastWeekMonday.getDate() - 7);
@@ -321,6 +488,19 @@
 
     function closeBanner() {
       document.getElementById('auto-reset-banner').classList.add('hidden');
+    }
+
+    function downloadSelfHTML() {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function getStreaks(checks) {
@@ -354,60 +534,48 @@
       return styles[cat] || 'bg-slate-100 text-slate-600';
     }
 
-    function toggleCheck(habitId, dayIdx) {
-      const habit = habits.find(h => h.id === habitId);
-      if (habit) {
-        habit.checks[dayIdx] = !habit.checks[dayIdx];
-        saveHabits();
-        renderAll();
-      }
+    function renderUserTabs() {
+      const container = document.getElementById('user-tabs');
+      container.innerHTML = users.map(u => {
+        const isActive = u.id === activeUserId;
+        const totalPossible = u.habits.length * 7;
+        const totalDone = u.habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
+        const pct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+
+        return `
+          <div
+            onclick="selectUser('${u.id}')"
+            class="cursor-pointer group flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition ${
+              isActive
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+            }"
+          >
+            <span>👤 ${u.name}</span>
+            <span class="text-xs px-1.5 py-0.5 rounded-md ${
+              isActive ? 'bg-indigo-500 text-indigo-100' : 'bg-slate-200/80 text-slate-600'
+            }">
+              ${pct}%
+            </span>
+            ${users.length > 1 ? `
+              <button
+                onclick="deleteUser('${u.id}', event)"
+                class="ml-1 text-xs ${isActive ? 'text-indigo-200 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition"
+                title="인원 삭제"
+              >
+                ✕
+              </button>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+
+      const activeUser = getActiveUser();
+      document.getElementById('target-user-badge').textContent = activeUser.name;
+      document.getElementById('table-user-title').textContent = activeUser.name;
+      document.getElementById('chart-user-title').textContent = activeUser.name;
+      document.getElementById('kpi-user-name-1').textContent = activeUser.name;
     }
-
-    function deleteHabit(habitId) {
-      habits = habits.filter(h => h.id !== habitId);
-      saveHabits();
-      renderAll();
-    }
-
-    function manualResetWeek() {
-      habits.forEach(h => {
-        h.checks = [false, false, false, false, false, false, false];
-      });
-      localStorage.setItem(WEEK_KEY, formatDateYMD(getMondayDate(new Date())));
-      saveHabits();
-      renderAll();
-    }
-
-    function restoreDefaults() {
-      habits = JSON.parse(JSON.stringify(DEFAULT_HABITS));
-      localStorage.setItem(WEEK_KEY, formatDateYMD(getMondayDate(new Date())));
-      saveHabits();
-      renderAll();
-    }
-
-    function clearHistory() {
-      historyLogs = [];
-      saveHistory();
-      renderAll();
-    }
-
-    document.getElementById('add-habit-form').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const input = document.getElementById('habit-input');
-      const category = document.getElementById('category-input').value;
-      const title = input.value.trim();
-      if (!title) return;
-
-      habits.push({
-        id: Date.now(),
-        title,
-        category,
-        checks: [false, false, false, false, false, false, false]
-      });
-      input.value = '';
-      saveHabits();
-      renderAll();
-    });
 
     function renderHeaderDate() {
       const now = new Date();
@@ -428,6 +596,8 @@
     }
 
     function renderTable() {
+      const user = getActiveUser();
+      const habits = user.habits;
       const todayIndex = getTodayIndex();
       const weekDates = getWeekDates(new Date());
 
@@ -454,7 +624,7 @@
         tbody.innerHTML = `
           <tr>
             <td colspan="11" class="py-10 text-center text-slate-400">
-              등록된 일일 목표가 없습니다. 상단 입력창에서 새 목표를 추가해 보세요!
+              '${user.name}'님의 등록된 일일 목표가 없습니다. 위 입력창에서 새 목표를 추가해 보세요!
             </td>
           </tr>
         `;
@@ -518,6 +688,8 @@
     }
 
     function renderKPIsAndChart() {
+      const user = getActiveUser();
+      const habits = user.habits;
       const todayIndex = getTodayIndex();
       const totalHabits = habits.length;
 
@@ -583,11 +755,14 @@
     }
 
     function renderHistory() {
+      const user = getActiveUser();
+      const historyLogs = user.history || [];
       const listEl = document.getElementById('history-list');
+
       if (historyLogs.length === 0) {
         listEl.innerHTML = `
           <li class="py-6 text-center text-slate-400 bg-slate-50 rounded-xl">
-            아직 자동 백업된 주간 기록이 없습니다.<br>
+            '${user.name}'님의 자동 백업된 주간 기록이 없습니다.<br>
             <span class="text-[11px]">상단 '⚡ 자동 초기화 테스트' 버튼을 눌러 확인해 보세요.</span>
           </li>
         `;
@@ -609,16 +784,15 @@
 
     function renderAll() {
       renderHeaderDate();
+      renderUserTabs();
       renderTable();
       renderKPIsAndChart();
       renderHistory();
     }
 
-    // 초기 실행 시 자동 초기화 여부 검사 후 렌더링
     checkAndAutoResetWeek();
     renderAll();
 
-    // 브라우저를 켜둔 채로 자정을 넘길 때를 대비해 1분마다 날짜 변경 감지
     setInterval(() => {
       checkAndAutoResetWeek();
       renderAll();
