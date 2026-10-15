@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>인원별 일일 습관 & 주간 연속 달성 대시보드</title>
+  <title>인원별 일일 습관 & 주간 이력 대시보드</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
@@ -26,7 +26,7 @@
     <div id="auto-reset-banner" class="hidden bg-indigo-600 text-white px-5 py-3.5 rounded-2xl shadow-sm flex items-center justify-between">
       <div class="flex items-center gap-2.5 text-sm font-medium">
         <span>✨</span>
-        <span id="auto-reset-message">새로운 주가 시작되어 모든 인원의 주간 체크 기록이 자동으로 초기화되었습니다!</span>
+        <span id="auto-reset-message">새로운 주가 시작되어 모든 인원의 지난주 상세 기록을 과거 이력에 보관하고 체크리스트를 초기화했습니다!</span>
       </div>
       <button onclick="closeBanner()" class="text-indigo-200 hover:text-white text-xs font-semibold px-2 py-1">닫기 ✕</button>
     </div>
@@ -35,19 +35,19 @@
     <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
       <div>
         <div class="flex flex-wrap items-center gap-2">
-          <span class="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-600 rounded-full">Multi-User Routine</span>
+          <span class="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-600 rounded-full">Multi-User & History</span>
           <span id="current-date-badge" class="text-xs text-slate-500 font-medium"></span>
           <span id="week-range-badge" class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md font-medium"></span>
         </div>
-        <h1 class="text-2xl font-bold text-slate-900 mt-1.5">습관 달성 & 스트릭 대시보드</h1>
-        <p class="text-sm text-slate-500 mt-0.5">인원별로 일일 목표를 관리하고 주간 연속 달성 기록을 확인하세요.</p>
+        <h1 class="text-2xl font-bold text-slate-900 mt-1.5">습관 달성 & 주간 이력 대시보드</h1>
+        <p class="text-sm text-slate-500 mt-0.5">인원별 이름 변경, 주간 목표 체크리스트 및 개인별 과거 달성 이력을 한눈에 관리하세요.</p>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="downloadSelfHTML()" class="px-3.5 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-xl shadow-sm transition">
           💾 HTML 다운로드
         </button>
-        <button onclick="simulateNextWeek()" class="px-3.5 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition">
-          ⚡ 자동 초기화 테스트
+        <button onclick="simulateNextWeek()" class="px-3.5 py-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition" title="다음 주로 넘어간 상황을 시뮬레이션하여 과거 이력 자동 저장을 테스트합니다">
+          ⚡ 주간 넘기기(이력 생성 테스트)
         </button>
         <button onclick="manualResetWeek()" class="px-3.5 py-2 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
           현재 인원 초기화
@@ -97,18 +97,20 @@
           <span id="best-streak" class="text-3xl font-extrabold text-amber-500">0일</span>
           <span id="best-habit-name" class="text-xs text-slate-500 truncate max-w-[150px]">-</span>
         </div>
-        <p id="last-reset-info" class="text-xs text-slate-400 mt-3">마지막 초기화: -</p>
+        <p id="last-reset-info" class="text-xs text-slate-400 mt-3">기준 주간 시작일: -</p>
       </div>
     </section>
 
-    <!-- [신규 추가] 인원(사용자) 추가 및 선택 탭 영역 (목표 추가 폼 상단) -->
+    <!-- 인원(사용자) 추가, 선택 및 이름 변경 탭 영역 -->
     <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
-            👥 인원 선택 및 추가
+            👥 인원 선택 및 관리
           </h2>
-          <p class="text-xs text-slate-400 mt-0.5">인원을 클릭하면 해당 인원의 주간 목표 체크리스트로 전환됩니다.</p>
+          <p class="text-xs text-slate-400 mt-0.5">
+            인원을 클릭하면 해당 인원의 <strong>주간 체크리스트</strong>와 하단 <strong>과거 달성 이력</strong>으로 전환됩니다. (✏️ 버튼으로 이름 수정)
+          </p>
         </div>
         <!-- 인원 추가 폼 -->
         <form id="add-user-form" class="flex items-center gap-2">
@@ -129,8 +131,8 @@
         </form>
       </div>
 
-      <!-- 인원 탭 리스트 -->
-      <div id="user-tabs" class="flex flex-wrap items-center gap-2">
+      <!-- 인원 탭 리스트 (이름 변경 ✏️ 및 삭제 ✕ 포함) -->
+      <div id="user-tabs" class="flex flex-wrap items-center gap-2.5">
         <!-- JS로 렌더링 -->
       </div>
     </section>
@@ -169,16 +171,25 @@
 
     <!-- 주간 습관 체크 매트릭스 -->
     <section class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 class="text-base font-bold text-slate-900">
-            <span id="table-user-title" class="text-indigo-600"></span>님의 주간 목표 체크리스트
+            <span id="table-user-title" class="text-indigo-600"></span>님의 이번 주 목표 체크리스트
           </h2>
-          <p class="text-xs text-slate-400">각 요일 셀에 실제 날짜가 표시되며, 주가 바뀌면 체크 상태만 자동으로 비워집니다.</p>
+          <p class="text-xs text-slate-400">각 요일 버튼을 눌러 달성 여부를 체크하세요. 주가 바뀌면 과거 이력으로 자동 보관됩니다.</p>
         </div>
-        <div class="flex items-center gap-2 text-xs text-slate-500">
-          <span class="inline-block w-3 h-3 rounded bg-indigo-600"></span> 완료
-          <span class="inline-block w-3 h-3 rounded bg-slate-100 border border-slate-300 ml-2"></span> 미완료
+        <div class="flex flex-wrap items-center gap-3">
+          <button
+            onclick="archiveCurrentWeekForActiveUser()"
+            class="px-3 py-1.5 text-xs font-semibold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg transition"
+            title="현재 체크된 이번 주 현황을 아래 과거 이력 목록에 즉시 저장합니다"
+          >
+            📥 현재 주간 기록 이력에 저장
+          </button>
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span class="inline-block w-3 h-3 rounded bg-indigo-600"></span> 완료
+            <span class="inline-block w-3 h-3 rounded bg-slate-100 border border-slate-300 ml-1"></span> 미완료
+          </div>
         </div>
       </div>
 
@@ -192,54 +203,94 @@
       </div>
     </section>
 
-    <!-- 하단: 요일별 달성 추이 & 지난주 아카이브 기록 -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <section class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h2 class="text-base font-bold text-slate-900">
-              <span id="chart-user-title" class="text-indigo-600"></span>님의 요일별 달성 추이
-            </h2>
-            <p class="text-xs text-slate-400">이번 주 요일별 완료 비율을 실시간으로 비교합니다.</p>
-          </div>
-        </div>
-        <div id="daily-chart" class="grid grid-cols-7 gap-3 items-end h-36 pt-6 px-2"></div>
-      </section>
-
-      <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+    <!-- 요일별 달성 추이 바 차트 -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div class="flex items-center justify-between mb-4">
         <div>
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-base font-bold text-slate-900">주간 자동 백업 기록</h2>
-            <span class="text-[11px] font-semibold px-2 py-0.5 bg-slate-100 text-slate-600 rounded">최근 5주</span>
-          </div>
-          <p class="text-xs text-slate-400 mb-4">선택된 인원의 이전 주 최종 달성률이 이곳에 보관됩니다.</p>
-          <ul id="history-list" class="space-y-2.5 text-xs"></ul>
+          <h2 class="text-base font-bold text-slate-900">
+            <span id="chart-user-title" class="text-indigo-600"></span>님의 이번 주 요일별 달성 추이
+          </h2>
+          <p class="text-xs text-slate-400">이번 주 요일별 완료 비율을 실시간으로 비교합니다.</p>
         </div>
-        <button onclick="clearHistory()" class="mt-4 text-xs text-slate-400 hover:text-slate-600 self-end underline">
-          현재 인원 백업 지우기
+      </div>
+      <div id="daily-chart" class="grid grid-cols-7 gap-3 items-end h-36 pt-6 px-2"></div>
+    </section>
+
+    <!-- [핵심 업그레이드] 선택된 인원의 주간 목표 달성 과거 이력 (상세 아코디언 뷰어) -->
+    <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-bold text-slate-900">
+              🗂️ <span id="history-user-title" class="text-indigo-600"></span>님의 주간 목표 달성 과거 이력
+            </h2>
+            <span id="history-count-badge" class="text-xs font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-600 rounded-full">0주 기록</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">
+            인원을 클릭하면 해당 인원의 과거 주차별 달성 기록만 모아 볼 수 있습니다. 각 주차를 클릭하면 당시 목표별 월~일 체크 상세 내역이 펼쳐집니다.
+          </p>
+        </div>
+        <button onclick="clearHistory()" class="text-xs text-slate-400 hover:text-rose-500 self-start sm:self-center underline whitespace-nowrap">
+          이 인원의 과거 이력 전체 삭제
         </button>
-      </section>
-    </div>
+      </div>
+
+      <!-- 과거 이력 리스트 컨테이너 -->
+      <div id="history-list" class="space-y-3">
+        <!-- JS로 렌더링 -->
+      </div>
+    </section>
   </div>
 
   <script>
     const DAYS = ['월', '화', '수', '목', '금', '토', '일'];
-    const STORAGE_KEY = 'habit_dashboard_multi_users_v3';
-    const ACTIVE_USER_KEY = 'habit_dashboard_active_user_v3';
-    const WEEK_KEY = 'habit_dashboard_week_monday_v3';
+    const STORAGE_KEY = 'habit_dashboard_multi_users_v4';
+    const ACTIVE_USER_KEY = 'habit_dashboard_active_user_v4';
+    const WEEK_KEY = 'habit_dashboard_week_monday_v4';
 
-    // 초기 샘플 데이터 (2명의 샘플 인원 구성)
+    // 초기 샘플 데이터 (각 인원마다 과거 주차 이력 샘플이 포함되어 바로 확인 가능)
     const DEFAULT_USERS = [
       {
         id: 'user_1',
-        name: '기본 사용자',
+        name: '홍운해',
         habits: [
-          { id: 101, title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, true, false, false, false, false] },
-          { id: 102, title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, false, false, false, false] },
-          { id: 103, title: '물 2L 이상 마시기', category: '건강', checks: [true, false, true, false, false, false, false] },
-          { id: 104, title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, false, false, false, false, false] }
+          { id: 101, title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, true, true, false, false, false] },
+          { id: 102, title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, true, false, false, false] },
+          { id: 103, title: '물 2L 이상 마시기', category: '건강', checks: [true, false, true, true, false, false, false] },
+          { id: 104, title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, true, false, false, false, false] }
         ],
-        history: []
+        history: [
+          {
+            id: 'hist_101',
+            weekMonday: '2026-10-05',
+            weekRange: '2026.10.05(월) ~ 10.11(일)',
+            rate: 86,
+            done: 24,
+            total: 28,
+            savedAt: '2026-10-12',
+            habitsSnapshot: [
+              { title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, true, true, true, true, false] },
+              { title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, true, true, false, true] },
+              { title: '물 2L 이상 마시기', category: '건강', checks: [true, true, false, true, true, true, true] },
+              { title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, true, true, true, true, false] }
+            ]
+          },
+          {
+            id: 'hist_102',
+            weekMonday: '2026-09-28',
+            weekRange: '2026.09.28(월) ~ 10.04(일)',
+            rate: 75,
+            done: 21,
+            total: 28,
+            savedAt: '2026-10-05',
+            habitsSnapshot: [
+              { title: '아침 스트레칭 & 유산소 30분', category: '건강', checks: [true, true, false, true, true, false, true] },
+              { title: '보안 아티클 및 기술 문서 리딩', category: '자기계발', checks: [true, true, true, true, true, false, false] },
+              { title: '물 2L 이상 마시기', category: '건강', checks: [true, false, true, true, true, true, false] },
+              { title: '핵심 업무 To-Do 3가지 우선 완수', category: '업무', checks: [true, true, true, true, true, true, false] }
+            ]
+          }
+        ]
       },
       {
         id: 'user_2',
@@ -249,7 +300,22 @@
           { id: 202, title: '저녁 독서 30분', category: '자기계발', checks: [false, true, true, false, false, false, false] },
           { id: 203, title: '비타민 챙겨 먹기', category: '건강', checks: [true, true, false, true, false, false, false] }
         ],
-        history: []
+        history: [
+          {
+            id: 'hist_201',
+            weekMonday: '2026-10-05',
+            weekRange: '2026.10.05(월) ~ 10.11(일)',
+            rate: 71,
+            done: 15,
+            total: 21,
+            savedAt: '2026-10-12',
+            habitsSnapshot: [
+              { title: '출근 후 데일리 스크럼 정리', category: '업무', checks: [true, true, true, true, true, false, false] },
+              { title: '저녁 독서 30분', category: '자기계발', checks: [true, false, true, true, false, true, true] },
+              { title: '비타민 챙겨 먹기', category: '건강', checks: [true, true, true, false, true, true, false] }
+            ]
+          }
+        ]
       }
     ];
 
@@ -269,6 +335,20 @@
       return `${y}-${m}-${d}`;
     }
 
+    function getWeekRangeLabelFromMondayStr(mondayStr) {
+      const parts = mondayStr.split('-');
+      if (parts.length !== 3) return `${mondayStr} 주간`;
+      const mon = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      const sun = new Date(mon);
+      sun.setDate(mon.getDate() + 6);
+      const y = mon.getFullYear();
+      const m1 = String(mon.getMonth() + 1).padStart(2, '0');
+      const d1 = String(mon.getDate()).padStart(2, '0');
+      const m2 = String(sun.getMonth() + 1).padStart(2, '0');
+      const d2 = String(sun.getDate()).padStart(2, '0');
+      return `${y}.${m1}.${d1}(월) ~ ${m2}.${d2}(일)`;
+    }
+
     function getWeekDates(baseDate = new Date()) {
       const monday = getMondayDate(baseDate);
       return Array.from({ length: 7 }, (_, idx) => {
@@ -285,6 +365,8 @@
 
     let users = loadUsers();
     let activeUserId = loadActiveUserId();
+    // 펼쳐진 과거 이력 카드 ID 목록 관리
+    let expandedHistoryIds = {};
 
     function loadUsers() {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -317,7 +399,45 @@
       return users.find(u => u.id === activeUserId) || users[0];
     }
 
-    // 현재 날짜 기준 모든 인원의 주간 기록 자동 초기화
+    // 특정 사용자의 주간 데이터를 과거 이력 객체로 만들어 저장하는 헬퍼 함수
+    function createAndSaveWeekHistoryForUser(user, weekMondayStr) {
+      const totalPossible = user.habits.length * 7;
+      const totalDone = user.habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
+      const weeklyPct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+
+      if (!user.history) user.history = [];
+
+      const snapshot = user.habits.map(h => ({
+        title: h.title,
+        category: h.category,
+        checks: [...h.checks]
+      }));
+
+      const newRecord = {
+        id: 'hist_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        weekMonday: weekMondayStr,
+        weekRange: getWeekRangeLabelFromMondayStr(weekMondayStr),
+        rate: weeklyPct,
+        done: totalDone,
+        total: totalPossible,
+        savedAt: formatDateYMD(new Date()),
+        habitsSnapshot: snapshot
+      };
+
+      // 같은 주간(weekMonday) 기록이 이미 맨 앞에 있으면 덮어쓰기, 없으면 맨 앞에 추가
+      const existingIdx = user.history.findIndex(item => item.weekMonday === weekMondayStr);
+      if (existingIdx !== -1) {
+        user.history[existingIdx] = newRecord;
+      } else {
+        user.history.unshift(newRecord);
+      }
+
+      // 최대 20주까지 넉넉히 과거 이력 보관
+      user.history = user.history.slice(0, 20);
+      return newRecord;
+    }
+
+    // 현재 날짜 기준 모든 인원의 주간 기록 자동 초기화 + 과거 이력 백업
     function checkAndAutoResetWeek() {
       const currentMondayStr = formatDateYMD(getMondayDate(new Date()));
       const savedMondayStr = localStorage.getItem(WEEK_KEY);
@@ -329,20 +449,7 @@
 
       if (savedMondayStr !== currentMondayStr) {
         users.forEach(user => {
-          const totalPossible = user.habits.length * 7;
-          const totalDone = user.habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
-          const weeklyPct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
-
-          if (!user.history) user.history = [];
-          user.history.unshift({
-            weekMonday: savedMondayStr,
-            rate: weeklyPct,
-            done: totalDone,
-            total: totalPossible,
-            resetAt: formatDateYMD(new Date())
-          });
-          user.history = user.history.slice(0, 5);
-
+          createAndSaveWeekHistoryForUser(user, savedMondayStr);
           user.habits.forEach(h => {
             h.checks = [false, false, false, false, false, false, false];
           });
@@ -353,15 +460,49 @@
 
         const banner = document.getElementById('auto-reset-banner');
         const msg = document.getElementById('auto-reset-message');
-        msg.textContent = `새로운 주(${currentMondayStr} 주간)가 시작되어 모든 인원의 지난주 기록을 백업하고 체크리스트를 자동 초기화했습니다.`;
+        msg.textContent = `새로운 주(${currentMondayStr} 주간)가 시작되어 모든 인원의 지난주 상세 달성 내역을 과거 이력에 보관하고 체크리스트를 초기화했습니다.`;
         banner.classList.remove('hidden');
       }
+    }
+
+    // 수동으로 현재 인원의 이번 주 기록을 과거 이력에 스냅샷 저장
+    function archiveCurrentWeekForActiveUser() {
+      const user = getActiveUser();
+      const currentMondayStr = formatDateYMD(getMondayDate(new Date()));
+      const record = createAndSaveWeekHistoryForUser(user, currentMondayStr);
+      expandedHistoryIds[record.id] = true; // 방금 저장한 이력을 바로 펼쳐서 보여줌
+      saveUsers();
+      renderAll();
     }
 
     // 인원 선택 전환
     function selectUser(userId) {
       activeUserId = userId;
       saveActiveUserId();
+      renderAll();
+    }
+
+    // [신규 기능] 인원 이름 변경 기능
+    function renameUser(userId, event) {
+      event.stopPropagation();
+      const target = users.find(u => u.id === userId);
+      if (!target) return;
+
+      const newName = prompt(`'${target.name}' 인원의 새로운 이름을 입력하세요:`, target.name);
+      if (newName === null) return; // 취소 클릭 시
+      const trimmed = newName.trim();
+
+      if (!trimmed) {
+        alert('이름은 비워둘 수 없습니다.');
+        return;
+      }
+      if (users.some(u => u.id !== userId && u.name === trimmed)) {
+        alert('이미 동일한 이름의 인원이 있습니다.');
+        return;
+      }
+
+      target.name = trimmed;
+      saveUsers();
       renderAll();
     }
 
@@ -402,7 +543,7 @@
         return;
       }
       const target = users.find(u => u.id === userId);
-      if (!confirm(`'${target.name}' 인원과 해당 체크리스트를 삭제하시겠습니까?`)) return;
+      if (!confirm(`'${target.name}' 인원과 모든 과거 달성 이력을 삭제하시겠습니까?`)) return;
 
       users = users.filter(u => u.id !== userId);
       if (activeUserId === userId) {
@@ -453,6 +594,7 @@
 
     function manualResetWeek() {
       const user = getActiveUser();
+      if (!confirm(`'${user.name}'님의 이번 주 체크박스를 모두 비우시겠습니까?`)) return;
       user.habits.forEach(h => {
         h.checks = [false, false, false, false, false, false, false];
       });
@@ -462,7 +604,7 @@
     }
 
     function restoreDefaults() {
-      if (!confirm('샘플 초기 데이터로 복원하시겠습니까?')) return;
+      if (!confirm('샘플 초기 데이터(과거 이력 포함)로 복원하시겠습니까?')) return;
       users = JSON.parse(JSON.stringify(DEFAULT_USERS));
       activeUserId = users[0].id;
       localStorage.setItem(WEEK_KEY, formatDateYMD(getMondayDate(new Date())));
@@ -473,15 +615,36 @@
 
     function clearHistory() {
       const user = getActiveUser();
+      if (!user.history || user.history.length === 0) return;
+      if (!confirm(`'${user.name}'님의 과거 주간 달성 이력을 모두 삭제하시겠습니까?`)) return;
       user.history = [];
       saveUsers();
       renderAll();
     }
 
+    function deleteSingleHistory(histId, event) {
+      event.stopPropagation();
+      const user = getActiveUser();
+      user.history = (user.history || []).filter(item => item.id !== histId);
+      saveUsers();
+      renderAll();
+    }
+
+    function toggleHistoryDetail(histId) {
+      expandedHistoryIds[histId] = !expandedHistoryIds[histId];
+      renderHistory();
+    }
+
     function simulateNextWeek() {
       const lastWeekMonday = getMondayDate(new Date());
       lastWeekMonday.setDate(lastWeekMonday.getDate() - 7);
-      localStorage.setItem(WEEK_KEY, formatDateYMD(lastWeekMonday));
+      // 이미 해당 주차 기록이 있으면 그보다 7일 더 이전 주차로 시뮬레이션 날짜 생성
+      const user = getActiveUser();
+      const offsetWeeks = (user.history ? user.history.length : 0) + 1;
+      const simulatedMonday = getMondayDate(new Date());
+      simulatedMonday.setDate(simulatedMonday.getDate() - (7 * offsetWeeks));
+
+      localStorage.setItem(WEEK_KEY, formatDateYMD(simulatedMonday));
       checkAndAutoResetWeek();
       renderAll();
     }
@@ -541,6 +704,7 @@
         const totalPossible = u.habits.length * 7;
         const totalDone = u.habits.reduce((acc, h) => acc + h.checks.filter(Boolean).length, 0);
         const pct = totalPossible > 0 ? Math.round((totalDone / totalPossible) * 100) : 0;
+        const histCount = (u.history || []).length;
 
         return `
           <div
@@ -554,13 +718,30 @@
             <span>👤 ${u.name}</span>
             <span class="text-xs px-1.5 py-0.5 rounded-md ${
               isActive ? 'bg-indigo-500 text-indigo-100' : 'bg-slate-200/80 text-slate-600'
-            }">
+            }" title="이번 주 달성률">
               ${pct}%
             </span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded-md ${
+              isActive ? 'bg-indigo-700/80 text-indigo-100' : 'bg-slate-200/50 text-slate-500'
+            }" title="보관된 과거 주간 이력 수">
+              이력 ${histCount}
+            </span>
+            <!-- 이름 변경 버튼 -->
+            <button
+              onclick="renameUser('${u.id}', event)"
+              class="ml-0.5 p-1 rounded hover:bg-black/10 text-xs ${
+                isActive ? 'text-indigo-100 hover:text-white' : 'text-slate-400 hover:text-indigo-600'
+              } transition"
+              title="이름 변경"
+            >
+              ✏️
+            </button>
             ${users.length > 1 ? `
               <button
                 onclick="deleteUser('${u.id}', event)"
-                class="ml-1 text-xs ${isActive ? 'text-indigo-200 hover:text-white' : 'text-slate-400 hover:text-rose-500'} transition"
+                class="p-1 rounded hover:bg-black/10 text-xs ${
+                  isActive ? 'text-indigo-200 hover:text-white' : 'text-slate-400 hover:text-rose-500'
+                } transition"
                 title="인원 삭제"
               >
                 ✕
@@ -574,6 +755,7 @@
       document.getElementById('target-user-badge').textContent = activeUser.name;
       document.getElementById('table-user-title').textContent = activeUser.name;
       document.getElementById('chart-user-title').textContent = activeUser.name;
+      document.getElementById('history-user-title').textContent = activeUser.name;
       document.getElementById('kpi-user-name-1').textContent = activeUser.name;
     }
 
@@ -754,32 +936,121 @@
       }).join('');
     }
 
+    // 선택된 인원만의 과거 주차별 목표 달성 이력 렌더링 (상세 체크 내역 아코디언 포함)
     function renderHistory() {
       const user = getActiveUser();
       const historyLogs = user.history || [];
       const listEl = document.getElementById('history-list');
+      document.getElementById('history-count-badge').textContent = `${historyLogs.length}주 기록`;
 
       if (historyLogs.length === 0) {
         listEl.innerHTML = `
-          <li class="py-6 text-center text-slate-400 bg-slate-50 rounded-xl">
-            '${user.name}'님의 자동 백업된 주간 기록이 없습니다.<br>
-            <span class="text-[11px]">상단 '⚡ 자동 초기화 테스트' 버튼을 눌러 확인해 보세요.</span>
-          </li>
+          <div class="py-10 text-center text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+            <p class="text-sm font-medium text-slate-500">'${user.name}'님의 보관된 주간 과거 이력이 없습니다.</p>
+            <p class="text-xs mt-1">위가 바뀌면 자동으로 이곳에 기록되거나, 상단 <strong>[📥 현재 주간 기록 이력에 저장]</strong> 버튼을 눌러 즉시 기록을 남길 수 있습니다.</p>
+          </div>
         `;
         return;
       }
 
-      listEl.innerHTML = historyLogs.map(item => `
-        <li class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
-          <div>
-            <div class="font-semibold text-slate-700">${item.weekMonday} 시작 주간</div>
-            <div class="text-[11px] text-slate-400">${item.done}/${item.total} 완료 · ${item.resetAt} 백업됨</div>
+      listEl.innerHTML = historyLogs.map((item, idx) => {
+        const histId = item.id || `hist_${idx}`;
+        const isExpanded = !!expandedHistoryIds[histId];
+        const rangeLabel = item.weekRange || getWeekRangeLabelFromMondayStr(item.weekMonday);
+        const snapshot = item.habitsSnapshot || [];
+
+        return `
+          <div class="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50 transition">
+            <!-- 요약 헤더 바 (클릭 시 상세 아코디언 토글) -->
+            <div
+              onclick="toggleHistoryDetail('${histId}')"
+              class="cursor-pointer p-4 bg-white hover:bg-slate-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
+              <div class="flex items-center gap-3">
+                <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 font-bold text-xs flex items-center justify-center">
+                  W-${historyLogs.length - idx}
+                </span>
+                <div>
+                  <div class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <span>📅 ${rangeLabel}</span>
+                    <span class="text-[11px] font-normal text-slate-400">(저장일: ${item.savedAt || item.resetAt || '-'})</span>
+                  </div>
+                  <div class="text-xs text-slate-500 mt-0.5">
+                    총 ${item.total}칸 중 <strong class="text-slate-700">${item.done}칸</strong> 달성 · 등록 목표 ${snapshot.length}개
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3 self-end sm:self-center">
+                <div class="w-28 bg-slate-100 h-2 rounded-full overflow-hidden hidden sm:block">
+                  <div class="bg-indigo-600 h-full" style="width: ${item.rate}%"></div>
+                </div>
+                <span class="px-3 py-1 rounded-xl font-extrabold text-sm ${
+                  item.rate >= 80 ? 'bg-emerald-50 text-emerald-600' : item.rate >= 50 ? 'bg-indigo-50 text-indigo-600' : 'bg-amber-50 text-amber-600'
+                }">
+                  ${item.rate}%
+                </span>
+                <button
+                  onclick="deleteSingleHistory('${histId}', event)"
+                  class="text-slate-300 hover:text-rose-500 p-1 text-xs transition"
+                  title="이 주간 이력 삭제"
+                >
+                  ✕
+                </button>
+                <span class="text-slate-400 text-xs font-bold w-5 text-center">
+                  ${isExpanded ? '▲' : '▼'}
+                </span>
+              </div>
+            </div>
+
+            <!-- 펼쳐졌을 때 보이는 해당 주차의 목표별 월~일 상세 달성 스냅샷 -->
+            ${isExpanded ? `
+              <div class="p-4 border-t border-slate-200 bg-slate-50 overflow-x-auto">
+                ${snapshot.length === 0 ? `
+                  <p class="text-xs text-slate-400 text-center py-3">상세 목표 스냅샷 정보가 없습니다.</p>
+                ` : `
+                  <table class="w-full text-left border-collapse bg-white rounded-xl overflow-hidden border border-slate-200 text-xs">
+                    <thead>
+                      <tr class="bg-slate-100/80 text-slate-500 border-b border-slate-200">
+                        <th class="py-2.5 px-4">당시 목표 항목</th>
+                        ${DAYS.map(d => `<th class="py-2.5 px-2 text-center w-10">${d}</th>`).join('')}
+                        <th class="py-2.5 px-3 text-center w-20">주간 성취</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                      ${snapshot.map(h => {
+                        const hDone = (h.checks || []).filter(Boolean).length;
+                        const hPct = Math.round((hDone / 7) * 100);
+                        return `
+                          <tr>
+                            <td class="py-2.5 px-4 font-medium text-slate-700">
+                              <span class="px-1.5 py-0.5 text-[10px] font-semibold rounded ${getCategoryBadge(h.category)} mr-1.5">
+                                ${h.category}
+                              </span>
+                              ${h.title}
+                            </td>
+                            ${(h.checks || []).map(c => `
+                              <td class="py-2 px-2 text-center">
+                                ${c
+                                  ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-indigo-600 text-white text-[10px] font-bold">✓</span>'
+                                  : '<span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-slate-300 text-[10px]">-</span>'
+                                }
+                              </td>
+                            `).join('')}
+                            <td class="py-2.5 px-3 text-center font-semibold text-slate-600">
+                              ${hDone}/7 (${hPct}%)
+                            </td>
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                `}
+              </div>
+            ` : ''}
           </div>
-          <span class="px-2.5 py-1 rounded-lg font-bold text-indigo-600 bg-indigo-50">
-            ${item.rate}%
-          </span>
-        </li>
-      `).join('');
+        `;
+      }).join('');
     }
 
     function renderAll() {
